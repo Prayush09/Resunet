@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function LoginPage() {
   const session = await getServerSession(authOptions)
-
+//TODO: THE SESSION IS NOT GETTING GENERATED AFTER LOGIN and SIGNUP LOOK INTO IT
   if (session) {
     redirect("/dashboard")
   }
