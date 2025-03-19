@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
@@ -26,9 +26,24 @@ type FormData = z.infer<typeof formSchema>
 
 export function LoginForm() {
   const { toast } = useToast()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false)
+  const [authError, setAuthError] = React.useState<string | null>(null)
+
+  // Check for error parameter in URL
+  React.useEffect(() => {
+    const error = searchParams?.get("error")
+    if (error) {
+      setAuthError(error)
+      toast({
+        title: "Authentication Error",
+        description: getErrorMessage(error),
+        variant: "destructive",
+      })
+    }
+  }, [searchParams, toast])
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -40,30 +55,83 @@ export function LoginForm() {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true)
+    setAuthError(null)
 
-    const signInResult = await signIn("credentials", {
-      email: data.email.toLowerCase(),
-      password: data.password,
-      redirect: false,
-      callbackUrl: searchParams?.get("from") || "/dashboard",
-    })
+    try {
+      const signInResult = await signIn("credentials", {
+        email: data.email.toLowerCase(),
+        password: data.password,
+        redirect: false,
+        callbackUrl: searchParams?.get("from") || "/dashboard",
+      })
 
-    setIsLoading(false)
+      if (!signInResult?.ok) {
+        setAuthError(signInResult?.error || "unknown-error")
+        toast({
+          title: "Sign in failed",
+          description: getErrorMessage(signInResult?.error),
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
 
-    if (!signInResult?.ok) {
-      return toast({
+      router.push(signInResult.url || "/dashboard")
+    } catch (error) {
+      console.error("Sign in error:", error)
+      toast({
         title: "Something went wrong",
         description: "Your sign in request failed. Please try again.",
         variant: "destructive",
       })
+      setIsLoading(false)
     }
-
-    window.location.href = signInResult.url || "/dashboard"
   }
 
   const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true)
-    await signIn("google", { callbackUrl: "/dashboard" })
+    try {
+      setIsGoogleLoading(true)
+      setAuthError(null)
+
+      // Directly use signIn without fetching providers first
+      await signIn("google", {
+        callbackUrl: "/dashboard",
+      })
+    } catch (error) {
+      console.error("Google sign in error:", error)
+      toast({
+        title: "Google Sign In Failed",
+        description: "There was an error signing in with Google. Please try again.",
+        variant: "destructive",
+      })
+      setIsGoogleLoading(false)
+    }
+  }
+
+  // Helper function to get user-friendly error messages
+  function getErrorMessage(errorCode: string | null | undefined): string {
+    switch (errorCode) {
+      case "OAuthSignin":
+        return "Error starting the OAuth sign-in flow."
+      case "OAuthCallback":
+        return "Error completing the OAuth sign-in."
+      case "OAuthCreateAccount":
+        return "Error creating a user with the OAuth provider."
+      case "EmailCreateAccount":
+        return "Error creating a user with the email provider."
+      case "Callback":
+        return "Error during the OAuth callback."
+      case "OAuthAccountNotLinked":
+        return "This email is already associated with another account."
+      case "EmailSignin":
+        return "Error sending the email sign-in link."
+      case "CredentialsSignin":
+        return "Invalid credentials. Please check your email and password."
+      case "SessionRequired":
+        return "You must be signed in to access this page."
+      default:
+        return "An unexpected error occurred. Please try again."
+    }
   }
 
   return (
@@ -118,6 +186,8 @@ export function LoginForm() {
         )}{" "}
         Google
       </Button>
+
+      {authError && <p className="text-sm text-destructive text-center">{getErrorMessage(authError)}</p>}
     </div>
   )
 }
