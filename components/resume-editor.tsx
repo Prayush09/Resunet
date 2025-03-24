@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import { SectionEditor } from "@/components/section-editor"
 import { SkillsEditor } from "@/components/skills-editor"
 import { ShareDialog } from "@/components/share-dialog"
+import { Card, CardContent } from "@/components/ui/card"
 
 const formSchema = z.object({
   title: z.string().min(1, {
@@ -24,21 +25,25 @@ const formSchema = z.object({
   summary: z.string().optional(),
 })
 
+interface ResumeSection {
+  id: string
+  type: string
+  content: string
+  order: number
+}
+
+interface ResumeSkill {
+  id: string
+  name: string
+  proficiency: number
+}
+
 interface Resume {
   id: string
   title: string
   summary: string | null
-  sections: {
-    id: string
-    type: string
-    content: string
-    order: number
-  }[]
-  skills: {
-    id: string
-    name: string
-    proficiency: number
-  }[]
+  sections: ResumeSection[]
+  skills: ResumeSkill[]
 }
 
 interface ResumeEditorProps {
@@ -94,17 +99,31 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Edit Resume</h1>
+    <div className="space-y-6 max-w-4xl mx-auto pb-10">
+      {/* Header section with responsive layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Edit Resume</h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setIsShareDialogOpen(true)}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 sm:flex-none"
+            onClick={() => setIsShareDialogOpen(true)}
+          >
             <Share2 className="mr-2 h-4 w-4" />
             Share
           </Button>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={isSaving}>
+          <Button 
+            size="sm"
+            className="flex-1 sm:flex-none"
+            onClick={form.handleSubmit(onSubmit)} 
+            disabled={isSaving}
+          >
             {isSaving ? (
-              <>Saving...</>
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Saving
+              </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
@@ -115,57 +134,74 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
         </div>
       </div>
 
-      <Form {...form}>
-        <form className="space-y-8">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Resume Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g. Software Developer Resume" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="summary"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Professional Summary</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Write a brief summary of your professional background and key qualifications..."
-                    className="min-h-[100px]"
-                    {...field}
-                    value={field.value || ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </form>
-      </Form>
+      <Card className="border rounded-lg shadow-sm">
+        <CardContent className="pt-6">
+          <Form {...form}>
+            <form className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Resume Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Software Developer Resume" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="summary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Professional Summary</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Write a brief summary of your professional background and key qualifications..."
+                        className="min-h-[120px] resize-y"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
 
-      <Tabs defaultValue="sections" className="mt-8">
-        <TabsList>
-          <TabsTrigger value="sections">Sections</TabsTrigger>
-          <TabsTrigger value="skills">Skills</TabsTrigger>
+      <Tabs defaultValue="sections" className="w-full">
+        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+          <TabsTrigger value="sections" className="flex-1 sm:flex-none">Sections</TabsTrigger>
+          <TabsTrigger value="skills" className="flex-1 sm:flex-none">Skills</TabsTrigger>
         </TabsList>
-        <TabsContent value="sections" className="mt-6">
-          <SectionEditor resumeId={resume.id} initialSections={resume.sections} />
+        
+        <TabsContent value="sections" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
+          <Card>
+            <CardContent className="pt-6">
+              <SectionEditor resumeId={resume.id} initialSections={resume.sections} />
+            </CardContent>
+          </Card>
         </TabsContent>
-        <TabsContent value="skills" className="mt-6">
-          <SkillsEditor resumeId={resume.id} initialSkills={resume.skills} />
+        
+        <TabsContent value="skills" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
+          <Card>
+            <CardContent className="pt-6">
+              <SkillsEditor resumeId={resume.id} initialSkills={resume.skills} />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
-      <ShareDialog resumeId={resume.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
+      <ShareDialog 
+        resumeId={resume.id} 
+        open={isShareDialogOpen} 
+        onOpenChange={setIsShareDialogOpen} 
+      />
     </div>
   )
 }
-
