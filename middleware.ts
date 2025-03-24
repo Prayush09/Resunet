@@ -11,6 +11,16 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   })
 
+  // Log token for debugging (only in development)
+  if (process.env.NODE_ENV === "development") {
+    console.log("Middleware token check:", {
+      path: pathname,
+      hasToken: !!token,
+      tokenId: token?.id,
+      tokenSub: token?.sub,
+    })
+  }
+
   // Check if the user is authenticated
   const isAuthenticated = !!token
 

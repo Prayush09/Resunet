@@ -1,48 +1,24 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import type { NextAuthOptions, DefaultSession } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import type { NextAuthOptions } from "next-auth"
+import GoogleProvider from "next-auth/providers/google"
+import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 
-import { db } from "@/lib/db";
-
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    accessToken: string;
-    refreshToken: string;
-    user: {
-      id: string;
-      email: string;
-      name: string;
-      image?: string | null; // Allow null value
-    };
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    accessToken: string;
-    refreshToken: string;
-    name: string;
-    email: string;
-    picture?: string | null; // Allow null value
-  }
-}
+import { db } from "@/lib/db"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/login",
-    error: "/login",
+    error: "/login", // Error code passed in query string as ?error=
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development", // Enable debug mode in development
   providers: [
-    // Google Provider
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -54,144 +30,179 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
-
-    // Credentials Provider (Email + Password)
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials): Promise<any> {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and Password are required");
+          return null
         }
 
         const user = await db.user.findUnique({
-          where: { email: credentials.email },
-        });
+          where: {
+            email: credentials.email,
+          },
+        })
 
         if (!user || !user.password) {
-          throw new Error("Invalid credentials");
+          return null
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) throw new Error("Invalid password");
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+        if (!isPasswordValid) {
+          return null
+        }
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          image: user.image || null,
-        };
+          image: user.image,
+        }
       },
     }),
   ],
   callbacks: {
-    // Handle JWT creation and storage
-    async jwt({ token, user, account }) {
-      if (user) {
-        token.id = user.id;
-        token.email = user.email as string;
-        token.name = user.name as string;
-        token.picture = user.image || null; // Handle null values properly
-      }
+    async signIn({ user, account, profile }) {
+      // Log sign-in attempt for debugging
+      console.log("Sign-in attempt:", {
+        user: user?.email,
+        provider: account?.provider,
+        profile: profile,
+      })
 
-      // If signing in with OAuth (Google)
-      if (account) {
-        token.accessToken = account.access_token as string;
-        token.refreshToken = account.refresh_token as string;
-      }
-
-      // Fetch user from database and attach to token
-      if (!token.email) return token;
-
-      const dbUser = await db.user.findUnique({
-        where: { email: token.email },
-      });
-
-      if (dbUser) {
-        token.id = dbUser.id;
-        token.name = dbUser.name;
-        token.email = dbUser.email;
-        token.picture = dbUser.image || null;
-      }
-
-      return token;
-    },
-
-    // Attach token data to session
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.image = token.picture || null;
-        session.accessToken = token.accessToken;
-        session.refreshToken = token.refreshToken;
-      }
-
-      return session;
-    },
-
-    // Handle sign-in behavior
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
+      if (account?.provider === "google" && profile?.email) {
+        // Check if user exists
         const existingUser = await db.user.findUnique({
-          where: { email: user.email! },
-        });
+          where: { email: profile.email },
+        })
 
-        await db.account.upsert({
-          where: {
-            provider_providerAccountId: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
+        if (!existingUser) {
+          // Create new user if they don't exist yet
+          await db.user.create({
+            data: {
+              email: profile.email,
+              name: profile.name || "Google User",
+              image: profile.image,
             },
-          },
-          create: {
-            userId: existingUser
-              ? existingUser.id
-              : (
-                  await db.user.create({
-                    data: {
-                      email: user.email!,
-                      name: user.name || "Google User",
-                      image: user.image || null,
-                    },
-                  })
-                ).id,
-            type: account.type,
-            provider: account.provider,
-            providerAccountId: account.providerAccountId,
-            access_token: account.access_token,
-            refresh_token: account.refresh_token,
-            expires_at: account.expires_at,
-            id_token: account.id_token,
-            scope: account.scope,
-            token_type: account.token_type,
-          },
-          update: {
-            access_token: account.access_token,
-            refresh_token: account.refresh_token,
-            expires_at: account.expires_at,
-            id_token: account.id_token,
-            scope: account.scope,
-            token_type: account.token_type,
-          },
-        });
-
-        console.log("✅ Linked Google account to existing user");
+          })
+        } else {
+          // Update existing user with latest profile info
+          await db.user.update({
+            where: { email: profile.email },
+            data: {
+              name: profile.name || existingUser.name,
+              image: profile.image  || existingUser.image,
+            },
+          })
+        }
       }
 
-      return true;
+      return true
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl
+    },
+    async session({ token, session }) {
+      console.log("Session callback called with token:", token)
+
+      if (token) {
+        session.user.id = token.id as string
+        session.user.name = token.name as string
+        session.user.email = token.email as string
+        session.user.image = (token.picture as string)
+      }
+
+      console.log("Returning session:", session)
+      return session
+    },
+    async jwt({ token, user, account, profile }) {
+      console.log("JWT callback called with:", {
+        tokenSub: token.sub,
+        userId: user?.id,
+        accountProvider: account?.provider,
+      })
+
+      // Initial sign in
+      if (account && user) {
+        console.log("Initial sign in, setting token from user:", user)
+        return {
+          ...token,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          picture: user.image,
+        }
+      }
+
+      // Return previous token if the user hasn't changed
+      const dbUser = await db.user.findFirst({
+        where: {
+          email: token.email as string,
+        },
+      })
+
+      if (!dbUser) {
+        console.log("No user found in database for token:", token)
+        if (token.sub) {
+          // Try to find by sub if email lookup fails
+          const userBySub = await db.user.findFirst({
+            where: {
+              id: token.sub,
+            },
+          })
+
+          if (userBySub) {
+            console.log("Found user by sub:", userBySub)
+            return {
+              ...token,
+              id: userBySub.id,
+              name: userBySub.name,
+              email: userBySub.email,
+              picture: userBySub.image,
+            }
+          }
+        }
+
+        console.log("Using token as is:", token)
+        return token
+      }
+
+      console.log("Found user in database:", dbUser)
+      return {
+        ...token,
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        picture: dbUser.image,
+      }
     },
   },
   events: {
-    async signIn({ user }) {
-      console.log(`✅ Sign-in: ${user.email}`);
+    async signIn(message) {
+      console.log("Successful sign-in event:", message)
     },
-    async signOut({ session }) {
-      console.log(`✅ Sign-out: ${session.user?.email}`);
+    async signOut(message) {
+      console.log("Sign-out event:", message)
+    },
+    async createUser(message) {
+      console.log("Create user event:", message)
+    },
+    async linkAccount(message) {
+      console.log("Link account event:", message)
+    },
+    //@ts-ignore
+    async error(message) {
+      console.error("Auth error event:", message)
     },
   },
-};
+}
+

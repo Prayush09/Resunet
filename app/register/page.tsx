@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-
+import { ArrowLeft } from "lucide-react"
 import { authOptions } from "@/lib/auth"
 import { RegisterForm } from "@/components/register-form"
 
@@ -13,26 +13,39 @@ export const metadata: Metadata = {
 
 export default async function RegisterPage() {
   const session = await getServerSession(authOptions)
-
+  
   if (session) {
     redirect("/dashboard")
   }
-
+  
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
-          <p className="text-sm text-muted-foreground">Enter your email below to create your account</p>
+    <div className="relative flex min-h-screen items-center justify-center bg-background px-4">
+      {/* Circular back button with fixed position */}
+      <div className="absolute top-4 left-4 z-10">
+        <Link 
+          href="/" 
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-background border shadow-sm hover:bg-accent transition-colors"
+          aria-label="Back to home"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+      </div>
+      
+      <div className="w-full max-w-md rounded-lg border p-6 shadow-lg">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold tracking-tight">Create an Account</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Enter your email below to create your account
+          </p>
         </div>
         <RegisterForm />
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          <Link href="/login" className="hover:text-brand underline underline-offset-4">
-            Already have an account? Sign In
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="text-primary font-medium hover:underline">
+            Sign In
           </Link>
         </p>
       </div>
     </div>
   )
 }
-

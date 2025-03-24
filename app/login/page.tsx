@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-
+import { ArrowLeft } from "lucide-react"
 import { authOptions } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
 
@@ -13,26 +13,40 @@ export const metadata: Metadata = {
 
 export default async function LoginPage() {
   const session = await getServerSession(authOptions)
-//TODO: THE SESSION IS NOT GETTING GENERATED AFTER LOGIN and SIGNUP LOOK INTO IT
+  
+  // Redirect to dashboard if session exists
   if (session) {
     redirect("/dashboard")
   }
-
+  
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Enter your email to sign in to your account</p>
+    <div className="relative flex min-h-screen w-full items-center justify-center bg-background px-4">
+      {/* Circular back button with fixed position */}
+      <div className="absolute top-4 left-4 z-10">
+        <Link 
+          href="/" 
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-background border shadow-sm hover:bg-accent transition-colors"
+          aria-label="Back to home"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+      </div>
+      
+      <div className="w-full max-w-md space-y-6 rounded-lg border p-6 shadow-lg">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Welcome Back</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Enter your email to sign in to your account
+          </p>
         </div>
         <LoginForm />
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          <Link href="/register" className="hover:text-brand underline underline-offset-4">
-            Don&apos;t have an account? Sign Up
+        <p className="text-center text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <Link href="/register" className="text-primary font-medium hover:underline">
+            Sign Up
           </Link>
         </p>
       </div>
     </div>
   )
 }
-
