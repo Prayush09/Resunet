@@ -1,27 +1,29 @@
-import type { Metadata } from "next"
-import Link from "next/link"
-import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { ArrowLeft } from "lucide-react"
-import { authOptions } from "@/lib/auth"
-import { LoginForm } from "@/components/login-form"
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { ArrowLeft } from "lucide-react";
+import { authOptions } from "@/lib/auth";
+import { LoginForm } from "@/components/login-form";
+import ParticlesBackground from "@/components/ui/particle-background";
 
 export const metadata: Metadata = {
   title: "Login",
   description: "Login to your account",
-}
+};
 
 export default async function LoginPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
   
   // Redirect to dashboard if session exists
   if (session) {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
   
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center bg-background px-4">
-      {/* Circular back button with fixed position */}
+    <div className="flex min-h-screen relative items-center justify-center">
+      <ParticlesBackground />
+
       <div className="absolute top-4 left-4 z-10">
         <Link 
           href="/" 
@@ -32,7 +34,7 @@ export default async function LoginPage() {
         </Link>
       </div>
       
-      <div className="w-full max-w-md space-y-6 rounded-lg border p-6 shadow-lg">
+      <div className="w-full max-w-md space-y-6 rounded-lg border p-6 shadow-lg bg-white bg-opacity-95">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Welcome Back</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -48,5 +50,5 @@ export default async function LoginPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

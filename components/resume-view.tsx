@@ -1,20 +1,29 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Download, User, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import ParticleBackground from "@/components/ui/particle-background" 
 
 interface ResumeViewProps {
   resume: any
 }
 
 export function ResumeView({ resume }: ResumeViewProps) {
+  const [shareLink, setShareLink] = useState<string>("")
   const [template, setTemplate] = useState("modern")
   const resumeRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Only set share link on client-side
+    if (typeof window !== 'undefined') {
+      setShareLink(`${window.location.origin}/r/${resume.id}`)
+    }
+  }, [resume.id])
 
   const renderSection = (section: any) => {
     const sectionTitle =
@@ -48,7 +57,7 @@ export function ResumeView({ resume }: ResumeViewProps) {
 
   const renderSkills = () => {
     if (!resume.skills || resume.skills.length === 0) return null
-
+  
     return (
       <div className="mb-8 animate-fadeIn">
         <div className="flex items-center gap-2 mb-4">
@@ -57,15 +66,25 @@ export function ResumeView({ resume }: ResumeViewProps) {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {resume.skills.map((skill: any) => (
-            <Card key={skill.id} className="overflow-hidden border-0 shadow-sm bg-muted/30">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{skill.name}</span>
-                  <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded-full">
-                    {skill.proficiency}%
+            <Card
+              key={skill.id}
+              className="overflow-hidden border-0 shadow-sm bg-muted/30 flex flex-col"
+            >
+              <CardContent className="p-4 flex-1 flex flex-col">
+                <div className="flex flex-col space-y-2">
+                  <span className="font-medium text-sm w-full break-words mb-1">
+                    {skill.name}
                   </span>
+                  <div className="flex items-center gap-2">
+                    <Progress
+                      value={skill.proficiency}
+                      className="h-2 bg-muted flex-1"
+                    />
+                    <span className="text-xs text-muted-foreground bg-background  rounded-full">
+                      {skill.proficiency}%
+                    </span>
+                  </div>
                 </div>
-                <Progress value={skill.proficiency} className="h-2 bg-muted" />
               </CardContent>
             </Card>
           ))}
@@ -75,13 +94,15 @@ export function ResumeView({ resume }: ResumeViewProps) {
   }
 
   const handleDownloadPDF = () => {
-    // This is a placeholder for PDF download functionality
+    //TODO: This is a placeholder for PDF download functionality
     alert("PDF download functionality would be implemented here")
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50 py-12">
+      <ParticleBackground />
       <div className="container max-w-4xl mx-auto px-4">
+      
         <Card className="overflow-hidden shadow-lg border-0">
           {/* Header with background gradient */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-8 relative">
@@ -100,7 +121,7 @@ export function ResumeView({ resume }: ResumeViewProps) {
             </div>
           </div>
 
-          {/* Resume content */}
+          {/* Rest of the component remains the same */}
           <div className="p-8" ref={resumeRef}>
             {resume.summary && (
               <div className="mb-8 animate-fadeIn">
@@ -129,12 +150,14 @@ export function ResumeView({ resume }: ResumeViewProps) {
             <Download className="mr-2 h-4 w-4 transition-transform group-hover:-translate-y-1" />
             Download PDF
           </Button>
-          <Button variant="outline" className="group" asChild>
-            <a href={`${window.location.origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              Share Link
-            </a>
-          </Button>
+          {shareLink && (
+            <Button variant="outline" className="group" asChild>
+              <a href={shareLink} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                Share Link
+              </a>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -163,4 +186,3 @@ export function ResumeView({ resume }: ResumeViewProps) {
     </div>
   )
 }
-

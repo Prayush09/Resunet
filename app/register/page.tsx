@@ -1,25 +1,29 @@
-import type { Metadata } from "next"
-import Link from "next/link"
-import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { ArrowLeft } from "lucide-react"
-import { authOptions } from "@/lib/auth"
-import { RegisterForm } from "@/components/register-form"
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { ArrowLeft } from "lucide-react";
+import { authOptions } from "@/lib/auth";
+import { RegisterForm } from "@/components/register-form";
+import ParticlesBackground from "@/components/ui/particle-background";
 
 export const metadata: Metadata = {
   title: "Create an account",
   description: "Create an account to get started",
-}
+};
 
 export default async function RegisterPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
   
   if (session) {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
   
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen relative items-center justify-center">
+      {/* Render Particle Background */}
+      <ParticlesBackground />
+
       {/* Circular back button with fixed position */}
       <div className="absolute top-4 left-4 z-10">
         <Link 
@@ -31,7 +35,7 @@ export default async function RegisterPage() {
         </Link>
       </div>
       
-      <div className="w-full max-w-md rounded-lg border p-6 shadow-lg">
+      <div className="w-full max-w-md space-y-6 rounded-lg border p-6 shadow-lg bg-white bg-opacity-95">
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight">Create an Account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -47,5 +51,5 @@ export default async function RegisterPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

@@ -40,10 +40,11 @@ export default async function ResumeEditPage({ params }: ResumeEditPageProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
-      <main className="flex-1 container py-10">
-        <ResumeEditor resume={resume} />
+      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-10">
+        <div className="w-full max-w-3xl">
+          <ResumeEditor resume={resume} />
+        </div>
       </main>
     </div>
   )
 }
-

@@ -1,57 +1,57 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { signOut, useSession } from "next-auth/react"
-import { FileText, LogOut, User } from "lucide-react"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { FileText, LogOut, User } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 type SessionUser = {
-  id: string
-  name?: string
-  email?: string
-  image?: string
-}
+  id: string;
+  name?: string;
+  email?: string;
+  image?: string;
+};
 
 export function DashboardHeader() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const { toast } = useToast()
-  const { data: session, status } = useSession()
-  const [mounted, setMounted] = useState(false)
+  const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+  const { data: session, status } = useSession();
+  const [mounted, setMounted] = useState(false);
   
   // Extract user data safely
-  const user = session?.user || (session as any)?.session?.user as SessionUser | undefined
+  const user = session?.user || (session as any)?.session?.user as SessionUser | undefined;
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true);
     
     if (status === "unauthenticated" && mounted) {
       toast({
         title: "Authentication required",
         description: "Please sign in to access this page",
-      })
-      router.push("/login")
+      });
+      router.push("/login");
     }
-  }, [status, mounted, router, toast])
+  }, [status, mounted, router, toast]);
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container h-16 px-4 mx-48">
-        <div className="flex h-full  items-center justify-between">
+      <div className="container mx-auto max-w-7xl h-16 px-4">
+        <div className="flex h-full items-center justify-between">
           {/* Logo and Navigation */}
           <div className="flex items-center space-x-4">
             <Link 
@@ -65,7 +65,7 @@ export function DashboardHeader() {
           
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-          <nav className="hidden md:flex">
+            <nav className="hidden md:flex">
               <Link
                 href="/dashboard"
                 className={`px-3 py-2 text-sm font-medium transition-colors hover:text-primary ${
@@ -110,10 +110,10 @@ export function DashboardHeader() {
                   <DropdownMenuItem
                     className="flex w-full items-center cursor-pointer"
                     onSelect={(event) => {
-                      event.preventDefault()
+                      event.preventDefault();
                       signOut({
                         callbackUrl: `${window.location.origin}/login`,
-                      })
+                      });
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
@@ -135,5 +135,5 @@ export function DashboardHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

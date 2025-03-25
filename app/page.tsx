@@ -132,7 +132,7 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="w-full max-w-3xl px-4 mx-auto relative"
           >
-            <div className="absolute top-10 left-10 animate-pulse">
+            <div className="animate-pulse">
               <Star className="h-8 w-8 text-primary/50" />
             </div>
             <div className="absolute bottom-10 right-10 animate-pulse delay-300">
