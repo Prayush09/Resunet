@@ -1,5 +1,8 @@
 "use client"
 
+//TODO: Add a way to import the data from another resume into the editor.
+
+
 import { useState, useRef, useEffect } from "react"
 import { Download, User, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -94,7 +97,8 @@ export function ResumeView({ resume }: ResumeViewProps) {
   }
 
   const handleDownloadPDF = () => {
-    //TODO: This is a placeholder for PDF download functionality
+    //TODO: #1 add a function to fetch the certificates of people from different sites, like if google certificates are available from scholar, fetch them and show them in the resume.
+    //TODO: #1 This is a placeholder for PDF download functionality
     alert("PDF download functionality would be implemented here")
   }
 

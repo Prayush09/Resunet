@@ -17,7 +17,21 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
     />
   )
 })
-Input.displayName = "Input"
+Input.displayName = "Input";
 
-export { Input }
+
+const LabeledInput = React.forwardRef<HTMLInputElement, InputProps & { label: string }>(
+  ({ className, type, label, ...props }, ref) => {
+    return (
+      <div className="flex flex-col space-y-1">
+        <label className="text-sm font-medium text-muted-foreground">{label}</label>
+        <Input ref={ref} type={type} className={className} {...props} />
+      </div>
+    );
+  }
+);
+LabeledInput.displayName = "LabeledInput";
+
+export { Input, LabeledInput };
+
 

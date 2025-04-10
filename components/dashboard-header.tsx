@@ -33,6 +33,7 @@ export function DashboardHeader() {
   
   // Extract user data safely
   const user = session?.user || (session as any)?.session?.user as SessionUser | undefined;
+  console.log("Session Details: ", session);
 
   useEffect(() => {
     setMounted(true);
