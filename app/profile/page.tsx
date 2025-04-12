@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LabeledInput, Input } from "@/components/ui/input";
+import { LabeledInput} from "@/components/ui/input";
 
 
 //Created a basic profile page that displays the user's name, email, and image URL. 

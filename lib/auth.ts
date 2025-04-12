@@ -75,10 +75,12 @@ export const authOptions: NextAuthOptions = {
         profile: profile,
       })
 
+      // Handle account linking for OAuth providers
       if (account?.provider === "google" && profile?.email) {
         // Check if user exists
         const existingUser = await db.user.findUnique({
           where: { email: profile.email },
+          include: { accounts: true },
         })
 
         if (!existingUser) {
@@ -91,14 +93,53 @@ export const authOptions: NextAuthOptions = {
             },
           })
         } else {
-          // Update existing user with latest profile info
-          await db.user.update({
-            where: { email: profile.email },
-            data: {
-              name: profile.name || existingUser.name,
-              image: profile.image  || existingUser.image,
-            },
-          })
+          // Check if this Google account is already linked
+          const linkedGoogleAccount = existingUser.accounts.find((acc) => acc.provider === "google")
+
+          if (!linkedGoogleAccount) {
+            // Link the Google account to the existing user
+            console.log("Linking Google account to existing user:", existingUser.email)
+
+            try {
+              await db.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state,
+                },
+              })
+
+              // Update user profile with Google info if needed
+              await db.user.update({
+                where: { id: existingUser.id },
+                data: {
+                  name: existingUser.name || profile.name,
+                  image: existingUser.image || profile.image,
+                },
+              })
+
+              return true
+            } catch (error) {
+              console.error("Error linking account:", error)
+              return false
+            }
+          } else {
+            // Update existing user with latest profile info
+            await db.user.update({
+              where: { email: profile.email },
+              data: {
+                name: profile.name || existingUser.name,
+                image: profile.image || existingUser.image,
+              },
+            })
+          }
         }
       }
 
@@ -118,7 +159,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.name = token.name as string
         session.user.email = token.email as string
-        session.user.image = (token.picture as string)
+        session.user.image = token.picture as string
       }
 
       console.log("Returning session:", session)
@@ -205,4 +246,3 @@ export const authOptions: NextAuthOptions = {
     },
   },
 }
-
