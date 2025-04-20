@@ -68,39 +68,53 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Log sign-in attempt for debugging
-      console.log("Sign-in attempt:", {
-        user: user?.email,
-        provider: account?.provider,
-        profile: profile,
-      })
-
-      // Handle account linking for OAuth providers
+      // Only process OAuth sign-ins
       if (account?.provider === "google" && profile?.email) {
-        // Check if user exists
-        const existingUser = await db.user.findUnique({
-          where: { email: profile.email },
-          include: { accounts: true },
-        })
-
-        if (!existingUser) {
-          // Create new user if they don't exist yet
-          await db.user.create({
-            data: {
-              email: profile.email,
-              name: profile.name || "Google User",
-              image: profile.image,
-            },
+        try {
+          // Check if user exists with this email
+          const existingUser = await db.user.findUnique({
+            where: { email: profile.email },
+            include: { accounts: true },
           })
-        } else {
-          // Check if this Google account is already linked
-          const linkedGoogleAccount = existingUser.accounts.find((acc) => acc.provider === "google")
 
-          if (!linkedGoogleAccount) {
-            // Link the Google account to the existing user
-            console.log("Linking Google account to existing user:", existingUser.email)
+          if (!existingUser) {
+            // Create new user if they don't exist yet
+            const newUser = await db.user.create({
+              data: {
+                email: profile.email,
+                name: profile.name || "Google User",
+                image: profile.image,
+                accounts: {
+                  create: {
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    access_token: account.access_token,
+                    expires_at: account.expires_at,
+                    token_type: account.token_type,
+                    scope: account.scope,
+                    id_token: account.id_token,
+                    session_state: account.session_state,
+                  },
+                },
+              },
+              include: {
+                accounts: true,
+              },
+            })
 
-            try {
+            console.log("Created new user with Google account:", newUser.email)
+            return true
+          } else {
+            // Check if this Google account is already linked
+            const linkedGoogleAccount = existingUser.accounts.find(
+              (acc) => acc.provider === "google" && acc.providerAccountId === account.providerAccountId,
+            )
+
+            if (!linkedGoogleAccount) {
+              // Link the Google account to the existing user
+              console.log("Linking Google account to existing user:", existingUser.email)
+
               await db.account.create({
                 data: {
                   userId: existingUser.id,
@@ -124,22 +138,15 @@ export const authOptions: NextAuthOptions = {
                   image: existingUser.image || profile.image,
                 },
               })
-
-              return true
-            } catch (error) {
-              console.error("Error linking account:", error)
-              return false
+            } else {
+              console.log("Google account already linked to user:", existingUser.email)
             }
-          } else {
-            // Update existing user with latest profile info
-            await db.user.update({
-              where: { email: profile.email },
-              data: {
-                name: profile.name || existingUser.name,
-                image: profile.image || existingUser.image,
-              },
-            })
+
+            return true
           }
+        } catch (error) {
+          console.error("Error in Google sign-in flow:", error)
+          return false
         }
       }
 

@@ -93,43 +93,11 @@ export function LoginForm() {
       setIsGoogleLoading(true)
       setAuthError(null)
 
-      // First attempt with redirect: false to catch errors
-      const result = await signIn("google", {
+      // Directly sign in with Google with redirect: true
+      // This simplifies the flow and avoids potential issues with the redirect: false approach
+      signIn("google", {
         callbackUrl: "/dashboard",
-        redirect: false,
       })
-
-      // If we get OAuthAccountNotLinked error, show a message and try again
-      if (result?.error === "OAuthAccountNotLinked") {
-        toast({
-          title: "Linking accounts",
-          description: "We're linking your Google account to your existing account. Please try again.",
-        })
-
-        // Wait a moment to show the toast
-        setTimeout(() => {
-          // Second attempt with redirect: true to complete the flow
-          signIn("google", {
-            callbackUrl: "/dashboard",
-          })
-        }, 1500)
-      } else if (result?.error) {
-        setAuthError(result.error)
-        toast({
-          title: "Sign in failed",
-          description: getErrorMessage(result.error),
-          variant: "destructive",
-        })
-        setIsGoogleLoading(false)
-      } else if (result?.url) {
-        // Successful sign-in with redirect: false
-        router.push(result.url)
-      } else {
-        // Default case - just redirect
-        signIn("google", {
-          callbackUrl: "/dashboard",
-        })
-      }
     } catch (error) {
       console.error("Google sign in error:", error)
       toast({

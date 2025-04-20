@@ -1,63 +1,36 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { DashboardHeader } from "@/components/dashboard-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LabeledInput} from "@/components/ui/input";
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+import { authOptions } from "@/lib/auth"
+import { db } from "@/lib/db"
+import { DashboardHeader } from "@/components/dashboard-header"
+import { ProfileForm } from "@/components/profile-form"
 
-
-//Created a basic profile page that displays the user's name, email, and image URL. 
-//Modify this to include additional user information as needed.
-//You can also add functionality to update the user's profile information.
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
 
   if (!session) {
-    return <p>You must be signed in to view this page.</p>;
+    redirect("/login")
   }
 
   const user = await db.user.findUnique({
     where: {
       id: session.user.id,
     },
-  });
+  })
 
   if (!user) {
-    return <p>User not found.</p>;
+    redirect("/login")
   }
 
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-10">
-        <div className="w-full max-w-3xl">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LabeledInput
-                label="Name"
-                value={user.name}
-                disabled
-                className="mb-4"
-              />
-              <LabeledInput
-                label="Email"
-                value={user.email}
-                disabled
-                className="mb-4"
-              />
-              <LabeledInput
-                label="Image URL"
-                value={user.image || ""}
-                disabled
-                className="mb-4"
-              />
-            </CardContent>
-          </Card>
+      <main className="flex-1 container py-10">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold tracking-tight mb-8">Profile Settings</h1>
+          <ProfileForm user={user} />
         </div>
       </main>
     </div>
-  );
+  )
 }

@@ -17,6 +17,7 @@ import { SectionEditor } from "@/components/section-editor";
 import { SkillsEditor } from "@/components/skills-editor";
 import { ShareDialog } from "@/components/share-dialog";
 import { Card, CardContent } from "@/components/ui/card";
+import { PatentsSection } from "@/components/patent-section"
 
 const formSchema = z.object({
   title: z.string().min(1, {
@@ -44,6 +45,7 @@ interface Resume {
   summary: string | null;
   sections: ResumeSection[];
   skills: ResumeSkill[];
+  userId: string; 
 }
 
 interface ResumeEditorProps {
@@ -181,32 +183,23 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
       </Card>
 
       {/* Tabs for Sections & Skills */}
-      <Tabs defaultValue="sections" className="w-full">
-        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
-          <TabsTrigger value="sections" className="flex-1 sm:flex-none">
-            Sections
-          </TabsTrigger>
-          <TabsTrigger value="skills" className="flex-1 sm:flex-none">
-            Skills
-          </TabsTrigger>
+      <Tabs defaultValue="sections" className="mt-8">
+        <TabsList>
+          <TabsTrigger value="sections">Sections</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="patents">Patents</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="sections" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
-          <Card>
-            <CardContent className="pt-6">
-              <SectionEditor resumeId={resume.id} initialSections={resume.sections} />
-            </CardContent>
-          </Card>
+        <TabsContent value="sections" className="mt-6">
+          <SectionEditor resumeId={resume.id} initialSections={resume.sections} />
         </TabsContent>
-        
-        <TabsContent value="skills" className="mt-6 focus-visible:outline-none focus-visible:ring-0">
-          <Card>
-            <CardContent className="pt-6">
-              <SkillsEditor resumeId={resume.id} initialSkills={resume.skills} />
-            </CardContent>
-          </Card>
+        <TabsContent value="skills" className="mt-6">
+          <SkillsEditor resumeId={resume.id} initialSkills={resume.skills} />
+        </TabsContent>
+        <TabsContent value="patents" className="mt-6">
+          <PatentsSection userId={resume.userId} />
         </TabsContent>
       </Tabs>
+
 
       <ShareDialog 
         resumeId={resume.id} 

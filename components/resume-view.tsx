@@ -102,13 +102,37 @@ export function ResumeView({ resume }: ResumeViewProps) {
     alert("PDF download functionality would be implemented here")
   }
 
+  const renderPatents = () => {
+    if (!resume.patents || resume.patents.length === 0) return null;
+
+    return (
+      <div className="mb-8 animate-fadeIn">
+        <div className="flex items-center gap-2 mb-4">
+          <h3 className="text-xl font-bold tracking-tight">Patents</h3>
+          <Separator className="flex-1" />
+        </div>
+        <div className="space-y-4">
+          {resume.patents.map((patent: any) => (
+            <div key={patent.id} className="border-l-2 border-primary/20 pl-4">
+              <h4 className="font-medium">{patent.title}</h4>
+              <p className="text-sm text-muted-foreground">{patent.authors}</p>
+              <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
+                {patent.patentNumber && <span>Patent: {patent.patentNumber}</span>}
+                {patent.publicationDate && <span>Published: {patent.publicationDate}</span>}
+                {patent.citations !== null && <span>Citations: {patent.citations}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50 py-12">
       <ParticleBackground />
       <div className="container max-w-4xl mx-auto px-4">
-      
         <Card className="overflow-hidden shadow-lg border-0">
-          {/* Header with background gradient */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-8 relative">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
               <Avatar className="h-24 w-24 border-4 border-background shadow-md">
@@ -125,7 +149,7 @@ export function ResumeView({ resume }: ResumeViewProps) {
             </div>
           </div>
 
-          {/* Rest of the component remains the same */}
+          {/* Resume content */}
           <div className="p-8" ref={resumeRef}>
             {resume.summary && (
               <div className="mb-8 animate-fadeIn">
@@ -143,6 +167,7 @@ export function ResumeView({ resume }: ResumeViewProps) {
               </div>
               <div className="space-y-8">
                 {renderSkills()}
+                {renderPatents()}
                 {resume.sections.filter((s: any) => s.type === "SKILLS").map(renderSection)}
               </div>
             </div>
@@ -154,14 +179,12 @@ export function ResumeView({ resume }: ResumeViewProps) {
             <Download className="mr-2 h-4 w-4 transition-transform group-hover:-translate-y-1" />
             Download PDF
           </Button>
-          {shareLink && (
-            <Button variant="outline" className="group" asChild>
-              <a href={shareLink} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                Share Link
-              </a>
-            </Button>
-          )}
+          <Button variant="outline" className="group" asChild>
+            <a href={`${window.location.origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              Share Link
+            </a>
+          </Button>
         </div>
       </div>
 

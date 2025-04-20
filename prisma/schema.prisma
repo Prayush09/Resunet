@@ -13,29 +13,35 @@ model User {
   password      String?
   name          String
   image         String?
+  role          String?
+  roleLink      String?
+  linkedin      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   resumes       Resume[]
+  googleScholarUrl String?
+  patentsToDisplay Int?    @default(3)
+  patents       Patent[]
   
   accounts      Account[]
   sessions      Session[]
 }
 
 model Account {
-  id                 String  @id @default(uuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
-  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -91,3 +97,17 @@ enum SectionType {
   CUSTOM
 }
 
+model Patent {
+  id            String   @id @default(uuid())
+  userId        String
+  title         String
+  authors       String
+  publicationDate String?
+  patentNumber  String?
+  abstract      String?
+  url           String?
+  citations     Int?
+  lastUpdated   DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
