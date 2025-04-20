@@ -61,6 +61,7 @@ model Resume {
   userId        String
   title         String
   summary       String?
+  template      String   @default("classic") // Added template field with default value
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
