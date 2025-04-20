@@ -20,7 +20,13 @@ export async function GET(req: Request) {
         id: session.user.id,
       },
       include: {
-        accounts: true,
+        accounts: {
+          select: {
+            id: true,
+            provider: true,
+            providerAccountId: true,
+          },
+        },
       },
     })
 
@@ -34,7 +40,6 @@ export async function GET(req: Request) {
           accounts: user.accounts.map((acc) => ({
             id: acc.id,
             provider: acc.provider,
-            type: acc.type,
             providerAccountId: acc.providerAccountId,
           })),
         }

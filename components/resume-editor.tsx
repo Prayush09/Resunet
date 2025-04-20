@@ -18,7 +18,7 @@ import { SectionEditor } from "@/components/section-editor"
 import { SkillsEditor } from "@/components/skills-editor"
 import { ShareDialog } from "@/components/share-dialog"
 import { PatentsSection } from "@/components/patent-section"
-import { TemplatePreview } from "@/components/template-preview"
+import { ExternalLink } from "lucide-react"
 
 const formSchema = z.object({
   title: z.string().min(1, {
@@ -111,6 +111,10 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
             <Share2 className="mr-2 h-4 w-4" />
             Share
           </Button>
+          <Button variant="outline" onClick={() => window.open(`/r/${resume.id}`)} >
+            <ExternalLink className="mr-2 h-4 w-4" />
+              Preview
+          </Button>
           <Button onClick={form.handleSubmit(onSubmit)} disabled={isSaving}>
             {isSaving ? (
               <>Saving...</>
@@ -189,7 +193,7 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
           <Layout className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-medium">Template Preview</h2>
         </div>
-        <TemplatePreview template={form.watch("template")} onClick={() => window.open(`/r/${resume.id}`, "_blank")} />
+       
       </div>
 
       <Tabs defaultValue="sections" value={activeTab} onValueChange={setActiveTab} className="mt-8">
@@ -209,6 +213,7 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
         </TabsContent>
       </Tabs>
 
+      
       <ShareDialog resumeId={resume.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
     </div>
   )

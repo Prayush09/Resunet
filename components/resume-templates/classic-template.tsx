@@ -134,6 +134,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
                   src={resume.user?.image || ""}
                   alt={resume.user?.name || ""}
                   referrerPolicy="no-referrer"
+                  loading="eager"
                 />
                 <AvatarFallback className="text-2xl bg-primary/20">
                   {resume.user?.name ? resume.user.name.charAt(0).toUpperCase() : <User className="h-12 w-12" />}

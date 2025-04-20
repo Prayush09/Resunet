@@ -132,6 +132,7 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
                   src={resume.user?.image || ""}
                   alt={resume.user?.name || ""}
                   referrerPolicy="no-referrer"
+                  loading="eager"
                 />
                 <AvatarFallback className="text-2xl bg-primary-foreground/10 text-primary-foreground">
                   {resume.user?.name ? resume.user.name.charAt(0).toUpperCase() : <User className="h-12 w-12" />}

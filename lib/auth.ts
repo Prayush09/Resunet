@@ -71,6 +71,8 @@ export const authOptions: NextAuthOptions = {
       // Only process OAuth sign-ins
       if (account?.provider === "google" && profile?.email) {
         try {
+          console.log("Google profile:", profile)
+
           // Check if user exists with this email
           const existingUser = await db.user.findUnique({
             where: { email: profile.email },
@@ -83,7 +85,8 @@ export const authOptions: NextAuthOptions = {
               data: {
                 email: profile.email,
                 name: profile.name || "Google User",
-                image: profile.image,
+                //@ts-ignore
+                image: profile.picture || profile.image, // Save the profile image
                 accounts: {
                   create: {
                     type: account.type,
@@ -111,6 +114,22 @@ export const authOptions: NextAuthOptions = {
               (acc) => acc.provider === "google" && acc.providerAccountId === account.providerAccountId,
             )
 
+            // Always update the user's profile with the latest Google info
+            await db.user.update({
+              where: { id: existingUser.id },
+              data: {
+                name: profile.name || existingUser.name,
+                //@ts-ignore
+                image: profile.picture || profile.image || existingUser.image,
+              },
+            })
+
+            console.log("Updated user profile with Google info:", {
+              name: profile.name,
+              //@ts-ignore
+              image: profile.picture || profile.image,
+            })
+
             if (!linkedGoogleAccount) {
               // Link the Google account to the existing user
               console.log("Linking Google account to existing user:", existingUser.email)
@@ -127,15 +146,6 @@ export const authOptions: NextAuthOptions = {
                   scope: account.scope,
                   id_token: account.id_token,
                   session_state: account.session_state,
-                },
-              })
-
-              // Update user profile with Google info if needed
-              await db.user.update({
-                where: { id: existingUser.id },
-                data: {
-                  name: existingUser.name || profile.name,
-                  image: existingUser.image || profile.image,
                 },
               })
             } else {

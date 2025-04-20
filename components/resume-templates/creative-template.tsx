@@ -146,6 +146,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
                     src={resume.user?.image || ""}
                     alt={resume.user?.name || ""}
                     referrerPolicy="no-referrer"
+                    loading="eager"
                   />
                   <AvatarFallback className="text-3xl bg-white/10">
                     {resume.user?.name ? resume.user.name.charAt(0).toUpperCase() : <User className="h-14 w-14" />}

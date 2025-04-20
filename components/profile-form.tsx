@@ -5,23 +5,27 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Save, RefreshCw } from 'lucide-react'
+import { Save, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { Icons } from "@/components/icons"
+import { ProfileImageUpdater } from "@/components/profile-image-updater"
 
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters",
   }),
-  googleScholarUrl: z.string().url({
-    message: "Please enter a valid URL",
-  }).optional().or(z.literal('')),
+  googleScholarUrl: z
+    .string()
+    .url({
+      message: "Please enter a valid URL",
+    })
+    .optional()
+    .or(z.literal("")),
   patentsToDisplay: z.coerce.number().int().min(0).max(20).optional(),
 })
 
@@ -32,6 +36,7 @@ interface ProfileFormProps {
     id: string
     name: string
     email: string
+    image?: string | null
     googleScholarUrl?: string | null
     patentsToDisplay?: number | null
   }
@@ -115,6 +120,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   return (
     <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Image</CardTitle>
+          <CardDescription>Update your profile image</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProfileImageUpdater />
+        </CardContent>
+      </Card>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Card>
@@ -157,15 +172,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <FormItem>
                     <FormLabel>Google Scholar Profile URL</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="https://scholar.google.com/citations?user=YOUR_ID" 
-                        {...field} 
+                      <Input
+                        placeholder="https://scholar.google.com/citations?user=YOUR_ID"
+                        {...field}
                         value={field.value || ""}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Enter the full URL to your Google Scholar profile
-                    </FormDescription>
+                    <FormDescription>Enter the full URL to your Google Scholar profile</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -177,27 +190,19 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <FormItem>
                     <FormLabel>Number of Patents to Display</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        min={0} 
-                        max={20} 
-                        {...field} 
-                        value={field.value || 0}
-                      />
+                      <Input type="number" min={0} max={20} {...field} value={field.value || 0} />
                     </FormControl>
-                    <FormDescription>
-                      How many patents do you want to display in your resume (0-20)
-                    </FormDescription>
+                    <FormDescription>How many patents do you want to display in your resume (0-20)</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
               <div className="flex justify-between pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={refreshPatents} 
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={refreshPatents}
                   disabled={isRefreshing || !form.getValues().googleScholarUrl}
                 >
                   {isRefreshing ? (
