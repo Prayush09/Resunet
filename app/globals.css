@@ -80,3 +80,76 @@
     @apply bg-background text-foreground;
   }
 }
+
+.ProseMirror {
+  @apply outline-none;
+}
+
+.ProseMirror p {
+  @apply my-1;
+}
+
+.ProseMirror h1 {
+  @apply text-2xl font-bold my-2;
+}
+
+.ProseMirror h2 {
+  @apply text-xl font-bold my-2;
+}
+
+.ProseMirror h3 {
+  @apply text-lg font-bold my-2;
+}
+
+.ProseMirror ul {
+  @apply list-disc pl-6 my-2;
+}
+
+.ProseMirror ol {
+  @apply list-decimal pl-6 my-2;
+}
+
+.ProseMirror li {
+  @apply my-1;
+}
+
+.ProseMirror a {
+  @apply text-primary underline;
+}
+
+.ProseMirror blockquote {
+  @apply border-l-4 border-muted pl-4 italic my-2;
+}
+
+.ProseMirror code {
+  @apply bg-muted px-1 py-0.5 rounded text-sm;
+}
+
+.ProseMirror pre {
+  @apply bg-muted p-4 rounded-md my-2 overflow-x-auto;
+}
+
+.ProseMirror pre code {
+  @apply bg-transparent p-0;
+}
+
+.ProseMirror img {
+  @apply max-w-full h-auto;
+}
+
+.ProseMirror hr {
+  @apply border-t border-border my-4;
+}
+
+.ProseMirror table {
+  @apply border-collapse w-full my-2;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  @apply border border-border p-2;
+}
+
+.ProseMirror th {
+  @apply bg-muted font-bold;
+}

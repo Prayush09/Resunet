@@ -1,8 +1,5 @@
 "use client"
 
-//TODO: Add a way to import the data from another resume into the editor.
-
-
 import { useState, useRef, useEffect } from "react"
 import { Download, User, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -49,10 +46,8 @@ export function ResumeView({ resume }: ResumeViewProps) {
           <Separator className="flex-1" />
         </div>
         <div
-          className="prose prose-slate max-w-none dark:prose-invert"
-          dangerouslySetInnerHTML={{
-            __html: section.content.split("\n").join("<br />"),
-          }}
+          className="prose prose-slate max-w-none dark:prose-invert rich-text-content"
+          dangerouslySetInnerHTML={{ __html: section.content }}
         />
       </div>
     )
@@ -157,7 +152,14 @@ export function ResumeView({ resume }: ResumeViewProps) {
                   <h2 className="text-xl font-bold tracking-tight">Summary</h2>
                   <Separator className="flex-1" />
                 </div>
-                <p className="text-muted-foreground leading-relaxed">{resume.summary}</p>
+                <div className="text-muted-foreground leading-relaxed prose prose-slate max-w-none dark:prose-invert rich-text-content">
+                  {/* If summary is already HTML, render it that way, otherwise treat as plain text */}
+                  {resume.summary.startsWith('<') ? (
+                    <div dangerouslySetInnerHTML={{ __html: resume.summary }} />
+                  ) : (
+                    <p>{resume.summary}</p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -196,18 +198,120 @@ export function ResumeView({ resume }: ResumeViewProps) {
         .animate-fadeIn {
           animation: fadeIn 0.5s ease-out forwards;
         }
-        .prose h1, .prose h2, .prose h3, .prose h4 {
-          color: hsl(var(--foreground));
-          margin-top: 1.5em;
-          margin-bottom: 0.5em;
+        
+        /* Rich text content styling to match TipTap editor output */
+        .rich-text-content {
+          line-height: 1.6;
         }
-        .prose p, .prose ul, .prose ol {
-          color: hsl(var(--muted-foreground));
+        
+        .rich-text-content h1 {
+          font-size: 2em;
+          font-weight: 700;
+          margin-top: 0.67em;
+          margin-bottom: 0.67em;
+        }
+        
+        .rich-text-content h2 {
+          font-size: 1.5em;
+          font-weight: 700;
+          margin-top: 0.83em;
+          margin-bottom: 0.83em;
+        }
+        
+        .rich-text-content h3 {
+          font-size: 1.17em;
+          font-weight: 700;
+          margin-top: 1em;
           margin-bottom: 1em;
         }
-        .prose strong {
+        
+        .rich-text-content strong {
+          font-weight: 700;
           color: hsl(var(--foreground));
-          font-weight: 600;
+        }
+        
+        .rich-text-content em {
+          font-style: italic;
+        }
+        
+        .rich-text-content u {
+          text-decoration: underline;
+        }
+        
+        .rich-text-content ul {
+          list-style-type: disc;
+          padding-left: 1.5em;
+          margin: 1em 0;
+        }
+        
+        .rich-text-content ol {
+          list-style-type: decimal;
+          padding-left: 1.5em;
+          margin: 1em 0;
+        }
+        
+        .rich-text-content li {
+          margin-bottom: 0.5em;
+        }
+        
+        .rich-text-content a {
+          color: hsl(var(--primary));
+          text-decoration: underline;
+        }
+        
+        .rich-text-content blockquote {
+          border-left: 3px solid hsl(var(--border));
+          padding-left: 1em;
+          margin-left: 0;
+          color: hsl(var(--muted-foreground));
+        }
+        
+        .rich-text-content code {
+          font-family: monospace;
+          background-color: hsl(var(--muted));
+          padding: 0.2em 0.4em;
+          border-radius: 3px;
+          font-size: 0.9em;
+        }
+        
+        .rich-text-content pre {
+          background-color: hsl(var(--muted));
+          padding: 1em;
+          border-radius: 5px;
+          overflow-x: auto;
+          margin: 1em 0;
+        }
+        
+        .rich-text-content pre code {
+          background-color: transparent;
+          padding: 0;
+          font-size: 0.9em;
+        }
+        
+        .rich-text-content img {
+          max-width: 100%;
+          height: auto;
+        }
+        
+        .rich-text-content p {
+          margin: 1em 0;
+        }
+        
+        .rich-text-content [data-align="center"] {
+          text-align: center;
+        }
+        
+        .rich-text-content [data-align="right"] {
+          text-align: right;
+        }
+        
+        .rich-text-content [data-align="justify"] {
+          text-align: justify;
+        }
+        
+        .rich-text-content mark {
+          background-color: hsl(var(--primary) / 0.2);
+          padding: 0.1em 0;
         }
       `}</style>
     </div>

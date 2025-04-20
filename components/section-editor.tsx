@@ -7,18 +7,8 @@ import { Edit, Grip, Plus, Trash } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Icons } from "@/components/icons"
+import { SectionEditorModal } from "@/components/section-editor-modal"
 
 interface Section {
   id: string
@@ -36,11 +26,11 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
   const router = useRouter()
   const { toast } = useToast()
   const [sections, setSections] = useState<Section[]>(initialSections)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSection, setEditingSection] = useState<Section | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
-  const handleOpenDialog = (section?: Section) => {
+  const handleOpenModal = (section?: Section) => {
     if (section) {
       setEditingSection(section)
     } else {
@@ -51,29 +41,29 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         order: sections.length,
       })
     }
-    setIsDialogOpen(true)
+    setIsModalOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-    setEditingSection(null)
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setTimeout(() => {
+      setEditingSection(null)
+    }, 300) // Wait for animation to complete
   }
 
-  const handleSaveSection = async () => {
-    if (!editingSection) return
-
+  const handleSaveSection = async (sectionData: Section) => {
     setIsSaving(true)
     try {
-      if (editingSection.id) {
+      if (sectionData.id) {
         // Update existing section
-        const response = await fetch(`/api/sections/${editingSection.id}`, {
+        const response = await fetch(`/api/sections/${sectionData.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            type: editingSection.type,
-            content: editingSection.content,
+            type: sectionData.type,
+            content: sectionData.content,
           }),
         })
 
@@ -81,7 +71,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
           throw new Error("Failed to update section")
         }
 
-        setSections(sections.map((s) => (s.id === editingSection.id ? editingSection : s)))
+        setSections(sections.map((s) => (s.id === sectionData.id ? sectionData : s)))
       } else {
         // Create new section
         const response = await fetch("/api/sections", {
@@ -91,9 +81,9 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
           },
           body: JSON.stringify({
             resumeId,
-            type: editingSection.type,
-            content: editingSection.content,
-            order: editingSection.order,
+            type: sectionData.type,
+            content: sectionData.content,
+            order: sectionData.order,
           }),
         })
 
@@ -105,10 +95,10 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         setSections([...sections, newSection])
       }
 
-      handleCloseDialog()
+      handleCloseModal()
       toast({
-        title: editingSection.id ? "Section updated" : "Section added",
-        description: editingSection.id
+        title: sectionData.id ? "Section updated" : "Section added",
+        description: sectionData.id
           ? "Your section has been updated successfully"
           : "Your section has been added successfully",
       })
@@ -214,7 +204,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Resume Sections</h2>
-        <Button onClick={() => handleOpenDialog()}>
+        <Button onClick={() => handleOpenModal()}>
           <Plus className="mr-2 h-4 w-4" />
           Add Section
         </Button>
@@ -226,7 +216,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
           <p className="text-muted-foreground mb-4">
             Add sections to your resume to showcase your experience, education, and skills.
           </p>
-          <Button onClick={() => handleOpenDialog()}>
+          <Button onClick={() => handleOpenModal()}>
             <Plus className="mr-2 h-4 w-4" />
             Add Your First Section
           </Button>
@@ -250,15 +240,11 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
                         </CardHeader>
                         <CardContent className="pb-4">
                           <div className="prose prose-sm max-w-none">
-                            <div
-                              dangerouslySetInnerHTML={{
-                                __html: section.content.split("\n").join("<br />"),
-                              }}
-                            />
+                            <div dangerouslySetInnerHTML={{ __html: section.content }} />
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-end gap-2 pt-0">
-                          <Button variant="outline" size="sm" onClick={() => handleOpenDialog(section)}>
+                          <Button variant="outline" size="sm" onClick={() => handleOpenModal(section)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </Button>
@@ -283,63 +269,13 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         </DragDropContext>
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{editingSection?.id ? "Edit Section" : "Add Section"}</DialogTitle>
-            <DialogDescription>
-              {editingSection?.id ? "Make changes to your section below." : "Add a new section to your resume."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <label htmlFor="section-type" className="text-sm font-medium">
-                Section Type
-              </label>
-              <Select
-                value={editingSection?.type || "EXPERIENCE"}
-                onValueChange={(value: any) => setEditingSection(editingSection ? { ...editingSection, type: value } : null)}
-              >
-                <SelectTrigger id="section-type">
-                  <SelectValue placeholder="Select section type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EDUCATION">Education</SelectItem>
-                  <SelectItem value="EXPERIENCE">Experience</SelectItem>
-                  <SelectItem value="SKILLS">Skills</SelectItem>
-                  <SelectItem value="PROJECTS">Projects</SelectItem>
-                  <SelectItem value="CERTIFICATIONS">Certifications</SelectItem>
-                  <SelectItem value="CUSTOM">Custom</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="section-content" className="text-sm font-medium">
-                Content
-              </label>
-              <Textarea
-                id="section-content"
-                className="min-h-[200px]"
-                placeholder="Enter section content..."
-                value={editingSection?.content || ""}
-                onChange={(e: { target: { value: any } }) =>
-                  setEditingSection(editingSection ? { ...editingSection, content: e.target.value } : null)
-                }
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveSection} disabled={isSaving}>
-              {isSaving && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-              {editingSection?.id ? "Update" : "Add"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SectionEditorModal
+        section={editingSection}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveSection}
+        isSaving={isSaving}
+      />
     </div>
   )
 }
-
