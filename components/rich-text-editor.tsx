@@ -66,7 +66,7 @@ const FontSize = Extension.create({
   },
   addCommands() {
     return {
-      setFontSize: (fontSize: string) => ({ chain }) => {
+      setFontSize: (fontSize: string) => ({ chain }: any) => {
         return chain().setMark('textStyle', { fontSize }).run()
       },
     } as any; // Type assertion to bypass TypeScript's complaints
@@ -253,6 +253,7 @@ export function RichTextEditor({
 
   // Set font size
   const setFontSize = useCallback((size: string) => {
+    //@ts-ignore
     editor?.chain().focus().setFontSize(size).run()
     setIsFontSizePickerOpen(false)
   }, [editor])
