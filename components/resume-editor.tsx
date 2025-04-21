@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, Suspense } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -58,6 +58,8 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("sections")
   const summaryRef = useRef<HTMLTextAreaElement>(null)
+  const [showAIEditor, setShowAIEditor] = useState(false)
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -120,6 +122,7 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
       })
     }
   }
+  
 
   return (
     <div className="space-y-6">
@@ -227,17 +230,35 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
       
       <ShareDialog resumeId={resume.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
       
-      {/* Add our AI Helper component */}
-    <ResumeAIHelper 
-      resumeData={{
-        title: form.watch("title"),
-        summary: form.watch("summary") ?? null,
-        sections: resume.sections,
-        skills: resume.skills
-      }}
-      activeTab={activeTab}
-      onSuggestionApply={handleSuggestionApply}
-    />
+      {/* AI Component */}
+      {!showAIEditor && (
+        <Button variant="outline" onClick={() => setShowAIEditor(true)}>
+          <Layout className="mr-2 h-4 w-4" />
+          AI Resume Editor
+        </Button>
+      )}
+
+
+        {showAIEditor && (
+        <Suspense fallback={<div className="text-sm text-muted-foreground">Loading AI Editor...</div>}>
+          <ResumeAIHelper
+            resumeData={{
+              title: form.watch("title"),
+              summary: form.watch("summary") ?? null,
+              sections: resume.sections,
+              skills: resume.skills
+            }}
+            activeTab={activeTab}
+            onSuggestionApply={handleSuggestionApply}
+          />
+          <Button variant="outline" onClick={() => setShowAIEditor(false)} >
+
+            <Layout className="mr-2 h-4 w-4" />
+            Close AI Editor
+          </Button>
+        </Suspense>
+    )}
+
 
     </div>
   )

@@ -389,13 +389,9 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
                       ? 'bg-primary text-primary-foreground' 
                       : 'bg-muted'
                   }`}>
-                    <p className="whitespace-pre-wrap">
-                        <div className="prose prose-sm max-w-none">
-                            <ReactMarkdown>
-                                {msg.content}
-                            </ReactMarkdown>
-                        </div>
-                    </p>
+                    <div className="prose dark:prose-invert">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
                     {msg.role === 'assistant' && msg.content.length > 20 && (
                       <div className="flex mt-2 space-x-2">
                         {activeTab === "sections" && resumeData.summary && (
