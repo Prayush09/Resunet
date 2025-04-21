@@ -85,7 +85,7 @@ export const authOptions: NextAuthOptions = {
               data: {
                 email: profile.email,
                 name: profile.name || "Google User",
-                //@ts-ignore
+                 //@ts-ignore
                 image: profile.picture || profile.image, // Save the profile image
                 accounts: {
                   create: {
@@ -126,7 +126,7 @@ export const authOptions: NextAuthOptions = {
 
             console.log("Updated user profile with Google info:", {
               name: profile.name,
-              //@ts-ignore
+               //@ts-ignore
               image: profile.picture || profile.image,
             })
 

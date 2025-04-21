@@ -5,27 +5,23 @@ import { getToken } from "next-auth/jwt"
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Special handling for NextAuth session endpoint
+  if (pathname === "/api/auth/session" && request.method === "POST") {
+    // Allow POST requests to the session endpoint
+    return NextResponse.next()
+  }
+
   // Get the token from the request
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   })
 
-  // Log token for debugging (only in development)
-  if (process.env.NODE_ENV === "development") {
-    console.log("Middleware token check:", {
-      path: pathname,
-      hasToken: !!token,
-      tokenId: token?.id,
-      tokenSub: token?.sub,
-    })
-  }
-
   // Check if the user is authenticated
   const isAuthenticated = !!token
 
   // Define protected routes
-  const protectedRoutes = ["/dashboard", "/resume"]
+  const protectedRoutes = ["/dashboard", "/resume", "/profile"]
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 
   // Define auth routes
@@ -52,7 +48,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all routes except for static files, api routes, and _next
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 }
-

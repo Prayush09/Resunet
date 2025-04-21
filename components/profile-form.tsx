@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { Icons } from "@/components/icons"
 import { ProfileImageUpdater } from "@/components/profile-image-updater"
+
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -123,7 +125,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Profile Image</CardTitle>
-          <CardDescription>Update your profile image</CardDescription>
+          <CardDescription>Update your profile image by uploading a photo or selecting an anime avatar</CardDescription>
         </CardHeader>
         <CardContent>
           <ProfileImageUpdater />
@@ -197,6 +199,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   </FormItem>
                 )}
               />
+
+              <Separator className="my-4" />
 
               <div className="flex justify-between pt-4">
                 <Button

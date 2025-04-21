@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { useCallback } from "react";
 import { loadSlim } from "tsparticles-slim";
 import type { Container, Engine } from "tsparticles-engine";
+import { GiNestEggs } from "react-icons/gi";
 
 const Particles = dynamic(() => import("react-particles"), {
   ssr: false,
@@ -102,8 +103,8 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="flex items-center gap-2 text-lg font-bold"
           >
-            <FileText className="h-6 w-6" />
-            <span>Resunet</span>
+            <GiNestEggs className="h-5 w-5"/> 
+            <span>Resunest</span>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 20 }}

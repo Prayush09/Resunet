@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
-import { FileText, LogOut, User } from "lucide-react"
-
+import { LogOut, Settings } from "lucide-react"
+import { GiNestEggs } from "react-icons/gi"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -31,8 +31,16 @@ export function DashboardHeader() {
   const { data: session, status } = useSession()
   const [mounted, setMounted] = useState(false)
 
-  // Extract user data safely
-  const user = session?.user || ((session as any)?.session?.user as SessionUser | undefined)
+  // Extract user data safely with more fallbacks
+  const user =
+    session?.user || (session as any)?.session?.user || ((session as any)?.data?.user as SessionUser | undefined)
+
+  // Log session data in development
+  if (process.env.NODE_ENV !== "production" && mounted) {
+    console.log("Dashboard Header - Session Status:", status)
+    console.log("Dashboard Header - Session Data:", session)
+    console.log("Dashboard Header - Extracted User:", user)
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -55,8 +63,8 @@ export function DashboardHeader() {
           {/* Logo and Navigation */}
           <div className="flex items-center space-x-4">
             <Link href="/dashboard" className="flex items-center space-x-2 font-bold">
-              <FileText className="h-5 w-5" />
-              <span>Resume Builder</span>
+              <GiNestEggs className="h-5 w-5" />
+              <span>Resunest</span>
             </Link>
           </div>
 
@@ -75,13 +83,14 @@ export function DashboardHeader() {
             {status === "authenticated" && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-9 w-9 rounded-full p-0" aria-label="User menu">
+                  <Button variant="ghost" className="h-9 w-9 rounded-full p-0 overflow-hidden" aria-label="User menu">
                     <Avatar className="h-full w-full">
                       <AvatarImage
                         src={user.image || ""}
                         alt={user.name || "User"}
                         referrerPolicy="no-referrer"
                         loading="eager"
+                        className="object-cover"
                       />
                       <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
@@ -100,8 +109,8 @@ export function DashboardHeader() {
 
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="flex w-full items-center cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Profile Settings</span>
                     </Link>
                   </DropdownMenuItem>
 

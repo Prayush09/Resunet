@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { ProfileForm } from "@/components/profile-form"
 
+
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
 

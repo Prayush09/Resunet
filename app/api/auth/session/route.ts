@@ -10,3 +10,11 @@ export async function GET() {
   })
 }
 
+
+export async function POST() {
+  const session = await getServerSession(authOptions)
+  return NextResponse.json({
+    authenticated: !!session,
+    session,
+  })
+}
