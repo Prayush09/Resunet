@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
-
+//TODO: Change from local host to public url
+//TODO: apply prod rules to google console.
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
