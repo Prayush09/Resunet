@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Save, Share2, Layout } from "lucide-react"
+import { Save, Share2, Layout, ExternalLink } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -18,7 +18,7 @@ import { SectionEditor } from "@/components/section-editor"
 import { SkillsEditor } from "@/components/skills-editor"
 import { ShareDialog } from "@/components/share-dialog"
 import { PatentsSection } from "@/components/patent-section"
-import { ExternalLink } from "lucide-react"
+import { ResumeAIHelper } from "@/components/AIBot" // Import our new component
 
 const formSchema = z.object({
   title: z.string().min(1, {
@@ -57,6 +57,7 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("sections")
+  const summaryRef = useRef<HTMLTextAreaElement>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,6 +100,24 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
       })
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  // Handler for when AI suggestions should be applied
+  const handleSuggestionApply = (content: string, targetField?: string) => {
+    // If a target field is specified, update that field
+    if (targetField === "summary") {
+      form.setValue("summary", content)
+      if (summaryRef.current) {
+        summaryRef.current.focus()
+      }
+    } else {
+      // Otherwise, copy to clipboard and notify user
+      navigator.clipboard.writeText(content)
+      toast({
+        title: "Copied to clipboard",
+        description: "The AI suggestion has been copied to your clipboard",
+      })
     }
   }
 
@@ -179,6 +198,7 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
                     className="min-h-[100px]"
                     {...field}
                     value={field.value || ""}
+                    ref={summaryRef}
                   />
                 </FormControl>
                 <FormMessage />
@@ -187,14 +207,6 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
           />
         </form>
       </Form>
-
-      <div className="border rounded-md p-4 bg-muted/30">
-        <div className="flex items-center gap-2 mb-4">
-          <Layout className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-medium">Template Preview</h2>
-        </div>
-       
-      </div>
 
       <Tabs defaultValue="sections" value={activeTab} onValueChange={setActiveTab} className="mt-8">
         <TabsList>
@@ -212,9 +224,26 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
           <PatentsSection userId={resume.userId} />
         </TabsContent>
       </Tabs>
-
       
       <ShareDialog resumeId={resume.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
+      
+      {/* Add our AI Helper component */}
+      <div className="mt-10">
+  <div className="border rounded-xl bg-muted/50 p-6 shadow-sm">
+    <ResumeAIHelper 
+      resumeData={{
+        title: form.watch("title"),
+        summary: form.watch("summary") ?? null,
+        sections: resume.sections,
+        skills: resume.skills
+      }}
+      activeTab={activeTab}
+      onSuggestionApply={handleSuggestionApply}
+    />
+  </div>
+</div>
+
+
     </div>
   )
 }
