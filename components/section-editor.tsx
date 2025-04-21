@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -109,6 +110,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         description: "Failed to save section",
         variant: "destructive",
       })
+      console.error("Error saving section:", error)
     } finally {
       setIsSaving(false)
     }
@@ -136,6 +138,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         description: "Failed to delete section",
         variant: "destructive",
       })
+      console.error("Error deleting section:", error)
     }
   }
 
@@ -178,6 +181,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         description: "Failed to reorder sections",
         variant: "destructive",
       })
+      console.error("Error reordering sections:", error)
     }
   }
 

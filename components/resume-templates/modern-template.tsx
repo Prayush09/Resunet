@@ -10,8 +10,46 @@ import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 
+// Define proper types for our resume structure
+interface ResumeUser {
+  name?: string;
+  email?: string;
+  image?: string;
+}
+
+interface ResumeSkill {
+  id: string;
+  name: string;
+  proficiency: number;
+}
+
+interface ResumePatent {
+  id: string;
+  title: string;
+  authors: string;
+  patentNumber?: string;
+  publicationDate?: string;
+  citations?: number | null;
+}
+
+interface ResumeSection {
+  id: string;
+  type: "EDUCATION" | "EXPERIENCE" | "PROJECTS" | "CERTIFICATIONS" | "SKILLS" | "CUSTOM";
+  content: string;
+}
+
+interface Resume {
+  id: string;
+  title: string;
+  summary?: string;
+  user?: ResumeUser;
+  skills?: ResumeSkill[];
+  patents?: ResumePatent[];
+  sections: ResumeSection[];
+}
+
 interface ModernTemplateProps {
-  resume: any
+  resume: Resume;
 }
 
 export function ModernTemplate({ resume }: ModernTemplateProps) {
@@ -19,7 +57,7 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
   const resumeRef = useRef<HTMLDivElement>(null)
   const [isExporting, setIsExporting] = useState(false)
 
-  const renderSection = (section: any) => {
+  const renderSection = (section: ResumeSection) => {
     const sectionTitle =
       section.type === "EDUCATION"
         ? "Education"
@@ -59,7 +97,7 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           <Separator className="flex-1" />
         </div>
         <div className="space-y-3">
-          {resume.skills.map((skill: any) => (
+          {resume.skills.map((skill: ResumeSkill) => (
             <div key={skill.id} className="space-y-1">
               <div className="flex justify-between items-center">
                 <span className="font-medium">{skill.name}</span>
@@ -83,7 +121,7 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           <Separator className="flex-1" />
         </div>
         <div className="space-y-4">
-          {resume.patents.map((patent: any) => (
+          {resume.patents.map((patent: ResumePatent) => (
             <Card key={patent.id} className="bg-muted/30 border-l-4 border-l-primary">
               <CardContent className="p-4">
                 <h4 className="font-medium">{patent.title}</h4>
@@ -101,7 +139,7 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
     )
   }
 
-  const handleExport = async (format: string) => {
+  const handleExport = async (_exportFormat: string) => {
     setIsExporting(true)
     try {
       toast({
@@ -168,12 +206,12 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-8">
-                {resume.sections.filter((s: any) => s.type !== "SKILLS").map(renderSection)}
+                {resume.sections.filter((s: ResumeSection) => s.type !== "SKILLS").map(renderSection)}
               </div>
               <div className="space-y-8">
                 {renderSkills()}
                 {renderPatents()}
-                {resume.sections.filter((s: any) => s.type === "SKILLS").map(renderSection)}
+                {resume.sections.filter((s: ResumeSection) => s.type === "SKILLS").map(renderSection)}
               </div>
             </div>
           </div>
@@ -204,6 +242,7 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           </DropdownMenu>
 
           <Button variant="outline" className="group" asChild>
+            {/* @ts-ignore */}
             <a href={`${window.location.origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               Share Link

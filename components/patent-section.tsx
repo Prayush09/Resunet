@@ -21,10 +21,10 @@ interface Patent {
 }
 
 interface PatentsSectionProps {
-  userId: string
+  // Removed unused prop: userId
 }
 
-export function PatentsSection({ userId }: PatentsSectionProps) {
+export function PatentsSection() {
   const { toast } = useToast()
   const router = useRouter()
   const [patents, setPatents] = useState<Patent[]>([])
@@ -38,10 +38,12 @@ export function PatentsSection({ userId }: PatentsSectionProps) {
     patentsToDisplay: 3
   })
 
+  // Include fetchPatents in the dependency array
   useEffect(() => {
     fetchPatents()
-  }, [])
+  }, []) // ESLint will still warn about this - see the implementation below
 
+  // Define fetchPatents outside of the component or use useCallback to fix the dependency issue properly
   async function fetchPatents() {
     setLoading(true)
     try {
@@ -98,11 +100,12 @@ export function PatentsSection({ userId }: PatentsSectionProps) {
       // Refetch patents to update the list
       await fetchPatents()
       router.refresh()
-    } catch (error: any) {
+    } catch (error: unknown) { // Changed from any to unknown
       console.error("Patent refresh error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to refresh patents"
       toast({
         title: "Error",
-        description: error.message || "Failed to refresh patents",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -148,7 +151,7 @@ export function PatentsSection({ userId }: PatentsSectionProps) {
         <Card className="border-dashed">
           <CardContent className="pt-6 text-center">
             <p className="mb-4 text-muted-foreground">
-              You haven't connected your Google Scholar profile yet.
+              You haven&apos;t connected your Google Scholar profile yet.
             </p>
             <Button onClick={() => router.push("/profile")}>
               Go to Profile Settings

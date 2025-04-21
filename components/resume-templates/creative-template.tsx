@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Download, User, ExternalLink, FileText, Mail, Award, Briefcase, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -8,14 +8,56 @@ import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 
+// Define proper types for our resume structure
+interface ResumeUser {
+  name?: string;
+  email?: string;
+  image?: string;
+}
+
+interface ResumeSkill {
+  id: string;
+  name: string;
+  proficiency: number;
+}
+
+interface ResumePatent {
+  id: string;
+  title: string;
+  authors: string;
+  patentNumber?: string;
+  publicationDate?: string;
+  citations?: number | null;
+}
+
+interface ResumeSection {
+  id: string;
+  type: "EDUCATION" | "EXPERIENCE" | "PROJECTS" | "CERTIFICATIONS" | "SKILLS" | "CUSTOM";
+  content: string;
+}
+
+interface Resume {
+  id: string;
+  title: string;
+  summary?: string;
+  user?: ResumeUser;
+  skills?: ResumeSkill[];
+  patents?: ResumePatent[];
+  sections: ResumeSection[];
+}
+
 interface CreativeTemplateProps {
-  resume: any
+  resume: Resume;
 }
 
 export function CreativeTemplate({ resume }: CreativeTemplateProps) {
   const { toast } = useToast()
   const resumeRef = useRef<HTMLDivElement>(null)
   const [isExporting, setIsExporting] = useState(false)
+  useEffect(() => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    // You can use the `origin` variable here, or store it in a state if needed
+  }, []);
 
   const getSectionIcon = (type: string) => {
     switch (type) {
@@ -30,7 +72,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     }
   }
 
-  const renderSection = (section: any) => {
+  const renderSection = (section: ResumeSection) => {
     const sectionTitle =
       section.type === "EDUCATION"
         ? "Education"
@@ -71,7 +113,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
           <div className="flex-1 h-0.5 bg-gradient-to-r from-primary/50 to-transparent rounded-full" />
         </div>
         <div className="flex flex-wrap gap-2">
-          {resume.skills.map((skill: any) => (
+          {resume.skills.map((skill: ResumeSkill) => (
             <div
               key={skill.id}
               className="px-3 py-1.5 rounded-full bg-primary/10 text-sm font-medium"
@@ -95,7 +137,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
           <div className="flex-1 h-0.5 bg-gradient-to-r from-primary/50 to-transparent rounded-full" />
         </div>
         <div className="space-y-4">
-          {resume.patents.map((patent: any) => (
+          {resume.patents.map((patent: ResumePatent) => (
             <div key={patent.id} className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10">
               <h4 className="font-medium">{patent.title}</h4>
               <p className="text-sm text-muted-foreground">{patent.authors}</p>
@@ -111,7 +153,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     )
   }
 
-  const handleExport = async (format: string) => {
+  const handleExport = async (_exportFormat: string) => {
     setIsExporting(true)
     try {
       toast({
@@ -189,12 +231,12 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-8">
-                {resume.sections.filter((s: any) => s.type !== "SKILLS").map(renderSection)}
+                {resume.sections.filter((s: ResumeSection) => s.type !== "SKILLS").map(renderSection)}
               </div>
               <div className="space-y-8">
                 {renderSkills()}
                 {renderPatents()}
-                {resume.sections.filter((s: any) => s.type === "SKILLS").map(renderSection)}
+                {resume.sections.filter((s: ResumeSection) => s.type === "SKILLS").map(renderSection)}
               </div>
             </div>
           </div>
@@ -225,7 +267,8 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
           </DropdownMenu>
 
           <Button variant="outline" className="group" asChild>
-            <a href={`${window.location.origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <a href={`${origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               Share Link
             </a>

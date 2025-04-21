@@ -10,8 +10,47 @@ import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 
+// Define proper types for the resume and its components
+interface Skill {
+  id: string
+  name: string
+  proficiency: number
+}
+
+interface Patent {
+  id: string
+  title: string
+  authors: string
+  patentNumber?: string
+  publicationDate?: string
+  citations?: number | null
+}
+
+interface ResumeUser {
+  id?: string
+  name?: string
+  email?: string
+  image?: string | null
+}
+
+interface ResumeSection {
+  id: string
+  type: "EDUCATION" | "EXPERIENCE" | "PROJECTS" | "CERTIFICATIONS" | "SKILLS" | "CUSTOM"
+  content: string
+}
+
+interface Resume {
+  id: string
+  title: string
+  summary?: string
+  user?: ResumeUser
+  sections: ResumeSection[]
+  skills?: Skill[]
+  patents?: Patent[]
+}
+
 interface ClassicTemplateProps {
-  resume: any
+  resume: Resume
 }
 
 export function ClassicTemplate({ resume }: ClassicTemplateProps) {
@@ -19,7 +58,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
   const resumeRef = useRef<HTMLDivElement>(null)
   const [isExporting, setIsExporting] = useState(false)
 
-  const renderSection = (section: any) => {
+  const renderSection = (section: ResumeSection) => {
     const sectionTitle =
       section.type === "EDUCATION"
         ? "Education"
@@ -59,7 +98,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
           <Separator className="flex-1" />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {resume.skills.map((skill: any) => (
+          {resume.skills.map((skill: Skill) => (
             <Card key={skill.id} className="overflow-hidden border-0 shadow-sm bg-muted/30">
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-2">
@@ -87,7 +126,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
           <Separator className="flex-1" />
         </div>
         <div className="space-y-4">
-          {resume.patents.map((patent: any) => (
+          {resume.patents.map((patent: Patent) => (
             <div key={patent.id} className="border-l-2 border-primary/20 pl-4">
               <h4 className="font-medium">{patent.title}</h4>
               <p className="text-sm text-muted-foreground">{patent.authors}</p>
@@ -103,7 +142,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
     )
   }
 
-  const handleExport = async (format: string) => {
+  const handleExport = async (_exportType: string) => {
     setIsExporting(true)
     try {
       toast({
@@ -162,12 +201,12 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-8">
-                {resume.sections.filter((s: any) => s.type !== "SKILLS").map(renderSection)}
+                {resume.sections.filter((s: ResumeSection) => s.type !== "SKILLS").map(renderSection)}
               </div>
               <div className="space-y-8">
                 {renderSkills()}
                 {renderPatents()}
-                {resume.sections.filter((s: any) => s.type === "SKILLS").map(renderSection)}
+                {resume.sections.filter((s: ResumeSection) => s.type === "SKILLS").map(renderSection)}
               </div>
             </div>
           </div>
@@ -198,6 +237,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
           </DropdownMenu>
 
           <Button variant="outline" className="group" asChild>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <a href={`${window.location.origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               Share Link

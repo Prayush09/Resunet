@@ -14,24 +14,30 @@ import ReactMarkdown from "react-markdown"
 interface Message {
   role: "user" | "assistant"
   content: string
-  isVisible?: boolean // Add flag to control visibility
+  isVisible?: boolean 
+}
+
+interface ResumeSectionData {
+  id: string
+  type: string
+  content: string
+}
+
+interface ResumeSkillData {
+  id: string
+  name: string
+  proficiency: number
+}
+
+interface ResumeData {
+  title: string
+  summary: string | null
+  sections: ResumeSectionData[]
+  skills: ResumeSkillData[]
 }
 
 interface ResumeAIHelperProps {
-  resumeData: {
-    title: string
-    summary: string | null
-    sections: {
-      id: string
-      type: string
-      content: string
-    }[]
-    skills: {
-      id: string
-      name: string
-      proficiency: number
-    }[]
-  }
+  resumeData: ResumeData
   activeTab: string
   onSuggestionApply: (content: string, targetField?: string) => void
 }
@@ -63,22 +69,7 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
     }
   }, [messages]);
 
-  // Auto-resize textarea based on content
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [inputValue]);
-
-  // Generate contextual suggestions based on active tab
-  useEffect(() => {
-    if (isExpanded && !suggestionInProgress && messages.length <= 1) {
-      generateContextualSuggestion(activeTab)
-    }
-  }, [activeTab, isExpanded])
-
-  async function generateContextualSuggestion(tab: string) {
+  const generateContextualSuggestion = async (tab: string) => {
     try {
       setSuggestionInProgress(true)
       setIsLoading(true)
@@ -121,7 +112,11 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
             break
             
           default:
-            response = await geminiService.analyzeResume(resumeData as any)
+            response = await geminiService.analyzeResume({
+              ...resumeData,
+              summary: resumeData.summary || undefined,
+              activeTab: tab
+            })
         }
       }
       
@@ -153,6 +148,21 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
       setSuggestionInProgress(false)
     }
   }
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [inputValue]);
+
+  // Generate contextual suggestions based on active tab
+  useEffect(() => {
+    if (isExpanded && !suggestionInProgress && messages.length <= 1) {
+      generateContextualSuggestion(activeTab)
+    }
+  }, [activeTab, isExpanded, suggestionInProgress, messages.length, generateContextualSuggestion])
 
   // Send message to AI
   async function sendMessage(content: string) {

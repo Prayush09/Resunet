@@ -103,7 +103,8 @@ export function ResumeList({ resumes }: ResumeListProps) {
         title: "Error",
         description: "Failed to delete resume",
         variant: "destructive",
-      })
+      });
+      console.error("Error deleting resume:", error);
     } finally {
       setIsDeleting(false)
       setDeleteId(null)
