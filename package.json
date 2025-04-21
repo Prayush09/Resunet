@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3000",
     "lint": "next lint",
     "update-patents": "curl -X GET http://localhost:3000/api/cron/update-patents?key=c9osbnx09029;wdg09jdsjxcx9c0-23msdjjsadpfgm09SDGSDCBWE$RT@$#)INSDB)H"
   },
