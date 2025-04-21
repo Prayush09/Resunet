@@ -228,8 +228,6 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
       <ShareDialog resumeId={resume.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
       
       {/* Add our AI Helper component */}
-      <div className="mt-10">
-  <div className="border rounded-xl bg-muted/50 p-6 shadow-sm">
     <ResumeAIHelper 
       resumeData={{
         title: form.watch("title"),
@@ -240,9 +238,6 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
       activeTab={activeTab}
       onSuggestionApply={handleSuggestionApply}
     />
-  </div>
-</div>
-
 
     </div>
   )

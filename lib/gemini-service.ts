@@ -7,7 +7,7 @@ class GeminiService {
   private apiEndpoint: string;
   
   constructor() {
-    this.apiKey = 'AIzaSyD_MCYA9oG0QJQ_IFShQyzm49rQ1GPx9zQ';
+    this.apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || (console.log('Gemini API key is not set'), '');
     // Updated endpoint URL to use the current version of the API
     this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   }

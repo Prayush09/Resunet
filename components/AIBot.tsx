@@ -368,7 +368,7 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
     >
       <div className="flex items-center">
         <Bot className="h-5 w-5 mr-2" />
-        <h3 className="font-medium">Resume AI Assistant</h3>
+        <h3 className="font-medium">Resunest AI Assistant</h3>
       </div>
       <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-primary-foreground/20">
         {isExpanded ? <X className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
