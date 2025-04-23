@@ -302,7 +302,8 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
                 resumeData.title || ""
               );
             } else {
-              response = "I'd be happy to help with your professional summary. Could you provide some details about your experience and skills, or would you like me to help you create one from scratch?";
+              
+              response = "I'd be happy to help with your professional summary.I am not working...|| Could you provide some details about your experience and skills, or would you like me to help you create one from scratch?";
             }
             break;
             

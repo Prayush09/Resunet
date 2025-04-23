@@ -8,8 +8,15 @@ import { AuthProvider } from "@/components/auth-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "Resume Builder",
-  description: "Create and share professional resumes",
+  title: "Resunest",
+  description: "Create and share professional resumes in minutes",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
+  },
 }
 
 export default function RootLayout({
@@ -30,4 +37,3 @@ export default function RootLayout({
     </html>
   )
 }
-
