@@ -6,6 +6,9 @@ import bcrypt from "bcryptjs"
 
 import { db } from "@/lib/db"
 
+// Get the base URL from environment or use the production URL
+const baseUrl = process.env.NEXTAUTH_URL || "https://resunest.prayushgiri.com"
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   session: {
@@ -85,7 +88,7 @@ export const authOptions: NextAuthOptions = {
               data: {
                 email: profile.email,
                 name: profile.name || "Google User",
-                 //@ts-ignore
+                //@ts-ignore
                 image: profile.picture || profile.image, // Save the profile image
                 accounts: {
                   create: {
@@ -126,7 +129,7 @@ export const authOptions: NextAuthOptions = {
 
             console.log("Updated user profile with Google info:", {
               name: profile.name,
-               //@ts-ignore
+              //@ts-ignore
               image: profile.picture || profile.image,
             })
 
@@ -163,11 +166,14 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async redirect({ url, baseUrl }) {
+      // Use our defined baseUrl instead of the parameter
+      const productionBaseUrl = process.env.NEXTAUTH_URL || "https://resunest.prayushgiri.com"
+
       // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
+      if (url.startsWith("/")) return `${productionBaseUrl}${url}`
       // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
+      else if (new URL(url).origin === productionBaseUrl) return url
+      return productionBaseUrl
     },
     async session({ token, session }) {
       console.log("Session callback called with token:", token)

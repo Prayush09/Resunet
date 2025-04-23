@@ -1,17 +1,38 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    domains: [
+      "lh3.googleusercontent.com",
+      "avatars.githubusercontent.com",
+      "encrypted-tbn0.gstatic.com",
+      "live.staticflickr.com",
+      "i1.sndcdn.com",
+      "mrwallpaper.com",
+      "resunest.prayushgiri.com",
+    ],
+    unoptimized: true,
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Referrer-Policy",
+            value: "no-referrer",
+          },
+        ],
+      },
+    ]
+  },
+}
 
-const nextConfig: NextConfig = {
-  /* config options here */ 
-  devIndicators: false,
-    // existing config...
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
-    typescript: {
-      ignoreBuildErrors: true,
-    },
-    reactStrictMode: false, // Optional: can help during debugging hydration
-    // 👇 disable React's error overlay in production
-    productionBrowserSourceMaps: false,
-  }
-export default nextConfig;
+module.exports = nextConfig
+

@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
-//TODO: Change from local host to public url
-//TODO: apply prod rules to google console.
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Special handling for NextAuth session endpoint
-  if (pathname === "/api/auth/session" && request.method === "POST") {
-    // Allow POST requests to the session endpoint
+  if (pathname === "/api/auth/session") {
+    // Allow all requests to the session endpoint
     return NextResponse.next()
   }
 

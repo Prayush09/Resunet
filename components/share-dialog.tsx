@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Copy, ExternalLink } from "lucide-react"
+import { Copy, Share2 } from "lucide-react"
 
-
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -11,58 +11,69 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 
 interface ShareDialogProps {
   resumeId: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
 }
 
-export function ShareDialog({ resumeId, open, onOpenChange }: ShareDialogProps) {
+export function ShareDialog({ resumeId }: ShareDialogProps) {
   const { toast } = useToast()
+  const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
-  const shareUrl = `${window.location.origin}/r/${resumeId}`
+
+  // Generate the shareable link
+  const shareableLink = `${typeof window !== "undefined" ? window.location.origin : ""}/r/${resumeId}`
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(shareUrl)
-    setCopied(true)
-    toast({
-      title: "Link copied",
-      description: "Resume link copied to clipboard",
-    })
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(shareableLink)
+      setCopied(true)
+      toast({
+        title: "Link copied",
+        description: "Resume link copied to clipboard",
+      })
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy link to clipboard",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Share2 className="mr-2 h-4 w-4" />
+          Share
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Your Resume</DialogTitle>
-          <DialogDescription>
-            Share this link with recruiters or potential employers. This link will always show the latest version of
-            your resume.
-          </DialogDescription>
+          <DialogTitle>Share resume</DialogTitle>
+          <DialogDescription>Anyone with this link will be able to view your resume.</DialogDescription>
         </DialogHeader>
         <div className="flex items-center space-x-2 mt-4">
-          <Input readOnly value={shareUrl} className="flex-1" />
-          <Button size="icon" onClick={handleCopy}>
+          <div className="grid flex-1 gap-2">
+            <Input readOnly value={shareableLink} className="w-full" />
+          </div>
+          <Button type="submit" size="sm" className="px-3" onClick={handleCopy}>
+            <span className="sr-only">Copy</span>
             <Copy className="h-4 w-4" />
           </Button>
         </div>
-        <DialogFooter className="mt-4">
-          <Button variant="outline" asChild>
-            <a href={shareUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Open Preview
-            </a>
-          </Button>
+        <DialogFooter className="sm:justify-start">
+          <DialogDescription className="text-xs text-muted-foreground">
+            This link will not expire unless you delete your resume.
+          </DialogDescription>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
-

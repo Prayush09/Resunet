@@ -13,7 +13,6 @@ import { Icons } from "@/components/icons"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { SessionRefresher } from "@/components/session-referesher"
 
 // Anime avatar options
 const animeAvatars = [
@@ -30,7 +29,7 @@ const animeAvatars = [
     alt: "Anime Avatar 3",
   },
   {
-    url: "https://wallpapers-clan.com/wp-content/uploads/2022/09/attack-on-titan-eren-pfp-15.jpg",
+    url: "https://mrwallpaper.com/images/thumbnail/anime-profile-picture-eren-yeager-0ml45i78qva0e0zh.jpg",
     alt: "Anime Avatar 4",
   },
   {
@@ -189,15 +188,16 @@ export function ProfileImageUpdater() {
 
       const data = await response.json()
 
-      // Don't try to update the session directly - instead, force a refresh
       toast({
         title: "Profile image updated",
         description: "Your profile image has been updated successfully",
       })
 
+      // Reset state
       setFile(null)
       if (fileInputRef.current) fileInputRef.current.value = ""
 
+      // Force refresh to update UI
       router.refresh()
     } catch (error) {
       console.error("Profile image update error:", error)
@@ -251,8 +251,10 @@ export function ProfileImageUpdater() {
 
         <TabsContent value="upload" className="space-y-4">
           <div className="flex flex-col space-y-4">
+            {/* Hidden file input */}
             <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
 
+            {/* Button to trigger file select */}
             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full">
               <Upload className="mr-2 h-4 w-4" />
               {file ? "Change Image" : "Select Image"}
@@ -294,7 +296,7 @@ export function ProfileImageUpdater() {
 
       <Separator />
 
-      <div className="flex justify-end space-x-2">
+      <div className="flex justify-end">
         <Button onClick={handleUpdateImage} disabled={isUpdating || (!file && !selectedAvatar)}>
           {isUpdating ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -303,7 +305,6 @@ export function ProfileImageUpdater() {
           )}
           Update Profile Image
         </Button>
-        <SessionRefresher  /> {/* Only show on larger screens */}
       </div>
     </div>
   )

@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -41,14 +43,14 @@ interface ResumeListProps {
 }
 
 // Custom Badge component
-function Badge({ 
-  children, 
-  variant = "default", 
-  className 
-}: { 
-  children: React.ReactNode, 
-  variant?: "default" | "secondary" | "outline" | "destructive", 
-  className?: string 
+function Badge({
+  children,
+  variant = "default",
+  className,
+}: {
+  children: React.ReactNode
+  variant?: "default" | "secondary" | "outline" | "destructive"
+  className?: string
 }) {
   const baseStyles = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
   const variantStyles = {
@@ -57,12 +59,8 @@ function Badge({
     outline: "border border-input",
     destructive: "bg-destructive text-destructive-foreground",
   }
-  
-  return (
-    <span className={cn(baseStyles, variantStyles[variant], className)}>
-      {children}
-    </span>
-  )
+
+  return <span className={cn(baseStyles, variantStyles[variant], className)}>{children}</span>
 }
 
 export function ResumeList({ resumes }: ResumeListProps) {
@@ -72,6 +70,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleCopyLink = async (id: string) => {
+    // Use the current origin for the link
     const link = `${window.location.origin}/r/${id}`
     await navigator.clipboard.writeText(link)
     toast({
@@ -103,8 +102,8 @@ export function ResumeList({ resumes }: ResumeListProps) {
         title: "Error",
         description: "Failed to delete resume",
         variant: "destructive",
-      });
-      console.error("Error deleting resume:", error);
+      })
+      console.error("Error deleting resume:", error)
     } finally {
       setIsDeleting(false)
       setDeleteId(null)
@@ -112,9 +111,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
   }
 
   // Sort resumes by updatedAt date (newest first)
-  const sortedResumes = [...resumes].sort((a, b) => 
-    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
+  const sortedResumes = [...resumes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 
   return (
     <>
@@ -122,7 +119,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
         {sortedResumes.map((resume) => {
           const updatedDuration = formatDistanceToNow(new Date(resume.updatedAt), { addSuffix: true })
           const isRecent = updatedDuration.includes("less than") || updatedDuration.includes("minute")
-          
+
           return (
             <Card key={resume.id} className="group overflow-hidden transition-all duration-300 hover:shadow-md">
               <CardHeader className="pb-2">
@@ -133,17 +130,18 @@ export function ResumeList({ resumes }: ResumeListProps) {
                       <CardTitle className="line-clamp-1 text-lg">{resume.title}</CardTitle>
                     </div>
                     {isRecent && (
-                      <Badge 
-                        variant="default" 
-                        className="mt-1 bg-primary/10 text-primary hover:bg-primary/20"
-                      >
+                      <Badge variant="default" className="mt-1 bg-primary/10 text-primary hover:bg-primary/20">
                         Recently updated
                       </Badge>
                     )}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-70 transition-opacity group-hover:opacity-100">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 opacity-70 transition-opacity group-hover:opacity-100"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">More options</span>
                       </Button>
@@ -174,9 +172,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
               <CardContent className="pb-3">
                 <div className="flex items-center text-xs text-muted-foreground mb-2">
                   <Calendar className="mr-1 h-3 w-3" />
-                  <CardDescription className="text-xs">
-                    Updated {updatedDuration}
-                  </CardDescription>
+                  <CardDescription className="text-xs">Updated {updatedDuration}</CardDescription>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-3 h-14">
                   {resume.summary || "No summary provided"}
