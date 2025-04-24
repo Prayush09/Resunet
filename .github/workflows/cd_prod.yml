@@ -1,8 +1,9 @@
-name: Production Deployment
+name: Production Branch CI
 
 on:
   push:
     branches: [ production ]
+
 
 jobs:
   deploy:
@@ -17,9 +18,33 @@ jobs:
         key: ${{ secrets.GCP_SSH_KEY }}
         port: ${{ secrets.GCP_PORT }}
         script: |
+          # Load environment variables and paths
+          export PATH=$PATH:/usr/bin:/usr/local/bin
+          source ~/.bashrc
+          source ~/.profile
+          
+          # If using nvm, load it
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          
+          # Print environment info for debugging
+          echo "Node version: $(node -v)"
+          echo "NPM version: $(npm -v)"
+          echo "Current directory: $(pwd)"
+          
+          # Navigate to project directory
           cd Resunet
+          
+          # Pull latest changes
           git pull origin production
-          npm ci
-          npm run build
-          pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start
-          pm2 save
+          
+          # Install dependencies
+          /usr/bin/npm ci
+          
+          # Build the application
+          /usr/bin/npm run build
+          
+          # Restart or start the PM2 process
+          # Use full path to PM2 if necessary
+          /usr/local/bin/pm2 restart nextjs-app || /usr/local/bin/pm2 start npm --name "nextjs-app" -- start
+          /usr/local/bin/pm2 save
