@@ -19,7 +19,7 @@ jobs:
         key: ${{ secrets.GCP_DEV_SSH_KEY }}
         port: ${{ secrets.GCP_PORT }}
         script: |
-          cd Resunet
+          cd ~/Resunet
           git pull origin main
           npm ci
           npm run build
