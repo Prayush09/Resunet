@@ -19,33 +19,9 @@ jobs:
         key: ${{ secrets.GCP_DEV_SSH_KEY }}
         port: ${{ secrets.GCP_PORT }}
         script: |
-          # Load environment variables and paths
-          export PATH=$PATH:/usr/bin:/usr/local/bin
-          source ~/.bashrc
-          source ~/.profile
-          
-          # If using nvm, load it
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          
-          # Print environment info for debugging
-          echo "Node version: $(node -v)"
-          echo "NPM version: $(npm -v)"
-          echo "Current directory: $(pwd)"
-          
-          # Navigate to project directory
           cd Resunet
-          
-          # Pull latest changes
           git pull origin main
-          
-          # Install dependencies
-          /home/prayushgiri/.nvm/versions/node/v22.14.0/bin/npm ci
-          
-          # Build the application
-          /home/prayushgiri/.nvm/versions/node/v22.14.0/bin/npm run build
-          
-          # Restart or start the PM2 process
-          # Use full path to PM2 if necessary
-          /home/prayushgiri/.nvm/versions/node/v22.14.0/bin/pm2 restart nextjs-app || /home/prayushgiri/.nvm/versions/node/v22.14.0/bin/pm2 start npm --name "nextjs-app" -- start
-          /home/prayushgiri/.nvm/versions/node/v22.14.0/bin/pm2 save
+          npm ci
+          npm run build
+          pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start
+          pm2 save
