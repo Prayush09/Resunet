@@ -7,29 +7,21 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
+    steps:
+    - name: Deploy to GCP Server
+      uses: appleboy/ssh-action@master
       with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Location of the project
-      run: cd Resunet
-
-    - name: Pull from main branch
-      run: git pull origin main
-
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build application
-      run: npm run build
-      
-    - name: Start application
-      run: pm2 start npm --name "nextjs-app" -- start
+        host: ${{ secrets.GCP_DEV_HOST }}
+        username: ${{ secrets.GCP_USERNAME }}
+        key: ${{ secrets.GCP_DEV_SSH_KEY }}
+        port: ${{ secrets.GCP_PORT }}
+        script: |
+          cd Resunet
+          git pull origin main
+          npm ci
+          npm run build
+          pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start
+          pm2 save
