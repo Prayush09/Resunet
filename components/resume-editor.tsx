@@ -224,7 +224,6 @@ export function ResumeEditor({ resume }: ResumeEditorProps) {
           <PatentsSection />
         </TabsContent>
       </Tabs>
-      
       <ShareDialog resumeId={resume.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
       
       {/* Add our AI Helper component */}

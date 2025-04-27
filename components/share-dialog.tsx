@@ -17,7 +17,9 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 
 interface ShareDialogProps {
-  resumeId: string
+  resumeId: string,
+  open: boolean,
+  onOpenChange: (isOpen: boolean) => void
 }
 
 export function ShareDialog({ resumeId }: ShareDialogProps) {

@@ -20,6 +20,7 @@ export default async function ResumeViewPage({ params }: ResumeViewPageProps) {
           select: {
             id: true,
             patentsToDisplay: true,
+            
           },
         },
       },
@@ -39,6 +40,9 @@ export default async function ResumeViewPage({ params }: ResumeViewPageProps) {
           select: {
             name: true,
             image: true,
+            linkedin: true,
+            twitter: true,
+            email: true
           },
         },
         sections: {
