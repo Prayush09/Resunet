@@ -4,6 +4,7 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,6 +30,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <div className="fixed bottom-4 right-4 z-50">
+              <ThemeToggle />
+            </div>
             {children}
             <Toaster />
           </ThemeProvider>
