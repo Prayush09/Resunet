@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { Download, User, ExternalLink, FileText, Mail, Twitter, Linkedin } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
@@ -160,19 +161,19 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/50 py-10">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/50  py-10">
       <div className="container max-w-4xl mx-auto px-4">
-        <Card className="overflow-hidden shadow-lg border-0">
-          <div className="bg-primary p-6 md:p-8 text-primary-foreground relative">
+        <Card className="overflow-hidden shadow-lg border-0 dark:border-gray-700">
+          <div className="bg-primary p-6 md:p-8 text-primary-foreground dark:bg-gray-800 dark:text-gray-100 relative">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
-              <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary-foreground/20 shadow-md">
+            <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary-foreground/20 shadow-md">
                 <AvatarImage
-                  src={resume.user?.image || ""}
-                  alt={resume.user?.name || ""}
+                  src={resume.user?.image || ''}
+                  alt={resume.user?.name || ''}
                   referrerPolicy="no-referrer"
                   loading="eager"
                 />
-                <AvatarFallback className="text-2xl bg-primary-foreground/10 text-primary-foreground">
+                <AvatarFallback className="text-2xl bg-primary-foreground/10 text-primary-foreground dark:bg-gray-700 dark:text-gray-200">
                   {resume.user?.name ? resume.user.name.charAt(0).toUpperCase() : <User className="h-12 w-12" />}
                 </AvatarFallback>
               </Avatar>
@@ -181,54 +182,46 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between w-full gap-2">
                   <div>
                     <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{resume.title}</h1>
-                    {resume.user?.name && <p className="text-lg md:text-xl opacity-90">{resume.user.name}</p>}
+                    {resume.user?.name && <p className="text-lg md:text-xl opacity-90 dark:opacity-80">{resume.user.name}</p>}
                   </div>
-                  
+
                   <div className="flex items-center gap-3 mt-2 md:mt-0">
                     {resume.user?.email && (
-                      <a 
-                        href={`mailto:${resume.user.email}`} 
-                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors duration-200"
+                      <a
+                        href={`mailto:${resume.user.email}`}
+                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200"
                         target="_blank"
                         rel="noopener noreferrer"
                         title={resume.user.email}
                       >
-                        <Mail className="h-5 w-5" />
+                        <Mail className="h-5 w-5 text-foreground" />
                       </a>
                     )}
                     {resume.user?.twitter && (
-                      <a 
-                        href={`https://twitter.com/${resume.user.twitter}`} 
-                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors duration-200"
+                      <a
+                        href={`https://twitter.com/${resume.user.twitter}`}
+                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200"
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Twitter"
                       >
-                        <Twitter className="h-5 w-5" />
+                        <Twitter className="h-5 w-5 text-foreground " />
                       </a>
                     )}
                     {resume.user?.linkedin && (
-                      <a 
+                      <a
                         href={resume.user.linkedin.startsWith('http') ? resume.user.linkedin : `https://linkedin.com/in/${resume.user.linkedin}`}
-                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors duration-200"
+                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200"
                         target="_blank"
                         rel="noopener noreferrer"
                         title="LinkedIn"
                       >
-                        <Linkedin className="h-5 w-5" />
+                        <Linkedin className="h-5 w-5 text-foreground " />
                       </a>
                     )}
                   </div>
                 </div>
-                
-                <div className="flex flex-wrap gap-4 mt-2">
-                  {resume.user?.email && (
-                    <div className="flex items-center gap-1 text-sm md:hidden">
-                      <Mail className="h-4 w-4" />
-                      <span>{resume.user.email}</span>
-                    </div>
-                  )}
-                </div>
+
               </div>
             </div>
           </div>
@@ -303,8 +296,13 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           color: hsl(var(--primary));
           margin-top: 1.2em;
           margin-bottom: 0.4em;
+          margin-top: 1.2em;
+          margin-bottom: 0.4em;
         }
         .prose p, .prose ul, .prose ol {
+          margin-top: 0.4em;
+          margin-bottom: 0.4em;
+          line-height: 1.4;
           margin-top: 0.4em;
           margin-bottom: 0.4em;
           line-height: 1.4;

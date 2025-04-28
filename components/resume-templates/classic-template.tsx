@@ -74,13 +74,13 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
                 : "Custom"
 
     return (
-      <div key={section.id} className="mb-6 animate-fadeIn hover:translate-x-1 transition-transform duration-300">
-        <div className="flex items-center gap-3 mb-3">
-          <h3 className="text-xl font-bold tracking-tight text-primary">{sectionTitle}</h3>
+      <div key={section.id} className="mb-4 animate-fadeIn hover:translate-x-1 transition-transform duration-300">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-lg font-bold tracking-tight text-primary">{sectionTitle}</h3>
           <Separator className="flex-1" />
         </div>
         <div
-          className="prose prose-slate max-w-none dark:prose-invert pl-4"
+          className="prose prose-slate max-w-none dark:prose-invert pl-3"
           dangerouslySetInnerHTML={{
             __html: section.content,
           }}
@@ -93,21 +93,21 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
     if (!resume.skills || resume.skills.length === 0) return null
 
     return (
-      <div className="mb-6 animate-fadeIn">
-        <div className="flex items-center gap-3 mb-3">
-          <h3 className="text-xl font-bold tracking-tight text-primary">Skills</h3>
+      <div className="mb-4 animate-fadeIn">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-lg font-bold tracking-tight text-primary">Skills</h3>
           <Separator className="flex-1" />
         </div>
-        <div className="grid gap-3">
+        <div className="grid gap-2">
           {resume.skills.map((skill: Skill) => (
             <Card 
               key={skill.id} 
               className="overflow-hidden border border-primary/10 shadow-sm hover:shadow-md transition-shadow duration-300 bg-gradient-to-r from-background to-primary/5"
             >
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-2">
+              <CardContent className="p-3">
+                <div className="flex justify-between items-center mb-1">
                   <span className="font-medium text-primary">{skill.name}</span>
-                  <span className="text-xs bg-primary/10 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-primary/10 px-2 py-0.5 rounded-full">
                     {skill.proficiency}%
                   </span>
                 </div>
@@ -127,32 +127,32 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
     if (!resume.patents || resume.patents.length === 0) return null
 
     return (
-      <div className="mb-6 animate-fadeIn">
-        <div className="flex items-center gap-3 mb-3">
-          <h3 className="text-xl font-bold tracking-tight text-primary">Patents</h3>
+      <div className="mb-4 animate-fadeIn">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-lg font-bold tracking-tight text-primary">Patents</h3>
           <Separator className="flex-1" />
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {resume.patents.map((patent: Patent) => (
             <div 
               key={patent.id} 
-              className="border-l-2 border-primary pl-4 py-3 hover:bg-primary/5 transition-colors duration-300 rounded-r-lg"
+              className="border-l-2 border-primary pl-3 py-2 hover:bg-primary/5 transition-colors duration-300 rounded-r-lg"
             >
-              <h4 className="font-semibold text-lg mb-1">{patent.title}</h4>
-              <p className="text-sm text-muted-foreground mb-2">{patent.authors}</p>
-              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <h4 className="font-semibold text-base mb-1">{patent.title}</h4>
+              <p className="text-sm text-muted-foreground mb-1">{patent.authors}</p>
+              <div className="flex flex-wrap gap-1 text-xs text-muted-foreground">
                 {patent.patentNumber && (
-                  <span className="bg-primary/5 px-2 py-1 rounded-full">
+                  <span className="bg-primary/5 px-2 py-0.5 rounded-full">
                     Patent: {patent.patentNumber}
                   </span>
                 )}
                 {patent.publicationDate && (
-                  <span className="bg-primary/5 px-2 py-1 rounded-full">
+                  <span className="bg-primary/5 px-2 py-0.5 rounded-full">
                     Published: {patent.publicationDate}
                   </span>
                 )}
                 {patent.citations !== null && (
-                  <span className="bg-primary/5 px-2 py-1 rounded-full">
+                  <span className="bg-primary/5 px-2 py-0.5 rounded-full">
                     Citations: {patent.citations}
                   </span>
                 )}
@@ -187,9 +187,9 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 py-8">
       <div className="container max-w-4xl mx-auto px-4">
         <Card className="overflow-hidden shadow-xl border-0 rounded-xl">
-          <div className="bg-gradient-to-r from-primary/20 to-primary/5 p-8">
-            <div className="flex flex-col md:flex-row md:items-center gap-6">
-              <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl hover:scale-105 transition-transform duration-300">
+          <div className="bg-gradient-to-r from-primary/20 to-primary/5 p-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <Avatar className="h-24 w-24 md:h-28 md:w-28 border-4 border-background shadow-xl hover:scale-105 transition-transform duration-300">
                 <AvatarImage
                   src={resume.user?.image || ""}
                   alt={resume.user?.name || ""}
@@ -202,72 +202,79 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
               </Avatar>
 
               <div className="flex-1">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                   <div>
-                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-primary">{resume.title}</h1>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-1 text-primary">{resume.title}</h1>
                     {resume.user?.name && (
-                      <p className="text-xl text-muted-foreground">{resume.user.name}</p>
+                      <p className="text-lg text-muted-foreground">{resume.user.name}</p>
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {resume.user?.email && (
                       <a 
                         href={`mailto:${resume.user.email}`}
-                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-300 transform hover:scale-110"
+                        className="flex items-center justify-center h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-300 transform hover:scale-110"
                         target="_blank"
                         rel="noopener noreferrer"
                         title={resume.user.email}
                       >
-                        <Mail className="h-5 w-5 text-primary" />
+                        <Mail className="h-4 w-4 text-foreground" />
                       </a>
                     )}
                     {resume.user?.twitter && (
                       <a 
                         href={`https://twitter.com/${resume.user.twitter}`}
-                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-300 transform hover:scale-110"
+                        className="flex items-center justify-center h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-300 transform hover:scale-110"
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Twitter Profile"
                       >
-                        <Twitter className="h-5 w-5 text-primary" />
+                        <Twitter className="h-4 w-4 text-foreground" />
                       </a>
                     )}
                     {resume.user?.linkedin && (
                       <a 
                         href={resume.user.linkedin.startsWith('http') ? resume.user.linkedin : `https://linkedin.com/in/${resume.user.linkedin}`}
-                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-300 transform hover:scale-110"
+                        className="flex items-center justify-center h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-300 transform hover:scale-110"
                         target="_blank"
                         rel="noopener noreferrer"
                         title="LinkedIn Profile"
                       >
-                        <Linkedin className="h-5 w-5 text-primary" />
+                        <Linkedin className="h-4 w-4 text-foreground" />
                       </a>
                     )}
                   </div>
                 </div>
 
-                
+                {resume.user?.email && (
+                  <div className="mt-2 md:mt-1">
+                    <div className="inline-flex items-center gap-1 text-xs bg-primary/10 px-2 py-1 rounded-full">
+                      <Mail className="h-3 w-3 text-primary" />
+                      <span>{resume.user.email}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="p-8" ref={resumeRef}>
+          <div className="p-6" ref={resumeRef}>
             {resume.summary && (
-              <div className="mb-8 animate-fadeIn">
-                <div className="flex items-center gap-3 mb-3">
-                  <h2 className="text-xl font-bold tracking-tight text-primary">Summary</h2>
+              <div className="mb-5 animate-fadeIn">
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-lg font-bold tracking-tight text-primary">Summary</h2>
                   <Separator className="flex-1" />
                 </div>
-                <p className="text-muted-foreground leading-relaxed text-lg pl-4">{resume.summary}</p>
+                <p className="text-muted-foreground leading-tight text-base pl-3">{resume.summary}</p>
               </div>
             )}
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="md:col-span-2 space-y-6">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="md:col-span-2 space-y-4">
                 {resume.sections.filter((s: ResumeSection) => s.type !== "SKILLS").map(renderSection)}
               </div>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {renderSkills()}
                 {renderPatents()}
                 {resume.sections.filter((s: ResumeSection) => s.type === "SKILLS").map(renderSection)}
@@ -309,7 +316,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
         </div>
       </div>
 
-      <style jsx global>{`
+      <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
@@ -319,12 +326,21 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
         }
         .prose h1, .prose h2, .prose h3, .prose h4 {
           color: hsl(var(--primary));
-          margin-top: 1.2em;
-          margin-bottom: 0.4em;
+          margin-top: 0.8em;
+          margin-bottom: 0.3em;
+          line-height: 1.15;
         }
         .prose p, .prose ul, .prose ol {
           color: hsl(var(--muted-foreground));
-          margin-bottom: 0.8em;
+          margin-bottom: 0.6em;
+          line-height: 1.15;
+        }
+        .prose ul, .prose ol {
+          padding-left: 1.25rem;
+        }
+        .prose li {
+          margin-bottom: 0.2em;
+          line-height: 1.15;
         }
         .prose strong {
           color: hsl(var(--primary));

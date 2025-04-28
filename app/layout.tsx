@@ -29,8 +29,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <div className="fixed bottom-4 right-4 z-50">
+          <ThemeProvider attribute="class" defaultTheme="white" enableSystem disableTransitionOnChange>
+            <div className="fixed bottom-4 left-4 z-50">
               <ThemeToggle />
             </div>
             {children}
