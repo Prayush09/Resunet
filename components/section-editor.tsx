@@ -1,13 +1,22 @@
-
 "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
-import { Edit, Grip, Plus, Trash } from "lucide-react"
+import { Edit, Grip, Loader2, Plus, Trash } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { SectionEditorModal } from "@/components/section-editor-modal"
 
@@ -30,10 +39,14 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSection, setEditingSection] = useState<Section | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [loadingEditId, setLoadingEditId] = useState<string | null>(null)
 
   const handleOpenModal = (section?: Section) => {
     if (section) {
       setEditingSection(section)
+      setLoadingEditId(null)
     } else {
       setEditingSection({
         id: "",
@@ -116,9 +129,23 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
     }
   }
 
-  const handleDeleteSection = async (id: string) => {
+  const handleEditClick = (section: Section) => {
+    setLoadingEditId(section.id)
+    setTimeout(() => {
+      handleOpenModal(section)
+    }, 300) // Simulate a brief loading time for the edit operation
+  }
+
+  const confirmDelete = (id: string) => {
+    setDeletingSectionId(id)
+  }
+
+  const handleDeleteSection = async () => {
+    if (!deletingSectionId) return
+    
+    setIsDeleting(true)
     try {
-      const response = await fetch(`/api/sections/${id}`, {
+      const response = await fetch(`/api/sections/${deletingSectionId}`, {
         method: "DELETE",
       })
 
@@ -126,7 +153,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         throw new Error("Failed to delete section")
       }
 
-      setSections(sections.filter((s) => s.id !== id))
+      setSections(sections.filter((s) => s.id !== deletingSectionId))
       toast({
         title: "Section deleted",
         description: "Your section has been deleted successfully",
@@ -139,6 +166,9 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         variant: "destructive",
       })
       console.error("Error deleting section:", error)
+    } finally {
+      setIsDeleting(false)
+      setDeletingSectionId(null)
     }
   }
 
@@ -248,15 +278,29 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-end gap-2 pt-0">
-                          <Button variant="outline" size="sm" onClick={() => handleOpenModal(section)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleEditClick(section)}
+                            disabled={loadingEditId === section.id}
+                          >
+                            {loadingEditId === section.id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Loading...
+                              </>
+                            ) : (
+                              <>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </>
+                            )}
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             className="text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteSection(section.id)}
+                            onClick={() => confirmDelete(section.id)}
                           >
                             <Trash className="mr-2 h-4 w-4" />
                             Delete
@@ -280,6 +324,35 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         onSave={handleSaveSection}
         isSaving={isSaving}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingSectionId} onOpenChange={(open) => !open && setDeletingSectionId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this section?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the section and remove all its content from your resume.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSection}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

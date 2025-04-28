@@ -120,15 +120,29 @@ export function ResumeList({ resumes }: ResumeListProps) {
 
   const handleEdit = (id: string) => {
     setLoadingResumeId(id)
-    // Will be handled by Next.js navigation
   }
 
   const handleView = (id: string) => {
     setLoadingViewId(id)
-    // Will be handled by Next.js navigation
   }
 
-  // Sort resumes by updatedAt date (newest first)
+  const truncateHtml = (html: string, maxLength: number = 120) => {
+    if (!html) return '';
+  
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    const textContent = tempDiv.textContent || tempDiv.innerText;
+    
+    if (textContent.length <= maxLength) {
+      return html;
+    }
+  
+    const truncatedText = textContent.substring(0, maxLength) + '...';
+    
+    return truncatedText;
+  };
+
   const sortedResumes = [...resumes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 
   return (
@@ -139,7 +153,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
           const isRecent = updatedDuration.includes("less than") || updatedDuration.includes("minute")
 
           return (
-            <Card key={resume.id} className="group overflow-hidden transition-all duration-300 hover:shadow-md">
+            <Card key={resume.id} className="group overflow-hidden transition-all duration-300 hover:shadow-md h-64 flex flex-col">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -194,22 +208,22 @@ export function ResumeList({ resumes }: ResumeListProps) {
                   </DropdownMenu>
                 </div>
               </CardHeader>
-              <CardContent className="pb-3">
+              <CardContent className="pb-3 flex-1 overflow-hidden">
                 <div className="flex items-center text-xs text-muted-foreground mb-2">
                   <Calendar className="mr-1 h-3 w-3" />
                   <CardDescription className="text-xs">Updated {updatedDuration}</CardDescription>
                 </div>
-                {resume.summary && (
-                <div
-                  className="prose prose-sm max-w-none dark:prose-invert pl-8 [&_p]:leading-relaxed [&_li]:leading-relaxed"
-                  dangerouslySetInnerHTML={{
-                    __html: resume.summary,
-                  }}
-                >
-              </div>
-          )}
+                <div className="h-16 overflow-hidden">
+                  {resume.summary ? (
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {resume.summary.replace(/<[^>]*>/g, '')}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No summary provided</p>
+                  )}
+                </div>
               </CardContent>
-              <CardFooter className="pt-0">
+              <CardFooter className="pt-0 mt-auto">
                 <div className="flex w-full gap-2">
                   <Button 
                     variant="outline" 
