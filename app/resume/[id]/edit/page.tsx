@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { ResumeEditor } from "@/components/resume-editor"
+import { ResumeProvider } from "@/contexts/resume-context" // 🛠️ Import it
 
 interface ResumeEditPageProps {
   params: {
@@ -41,8 +42,10 @@ export default async function ResumeEditPage({ params }: ResumeEditPageProps) {
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
       <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-10">
-        <div className="w-full max-w-3xl">
-          <ResumeEditor resume={resume} />
+        <div className="w-full max-w-5xl"> 
+          <ResumeProvider initialResume={resume}>
+            <ResumeEditor initialResume={resume} />
+          </ResumeProvider>
         </div>
       </main>
     </div>

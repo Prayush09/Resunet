@@ -21,6 +21,20 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters",
   }),
+  twitter: z
+    .string()
+    .regex(/^@?[a-zA-Z0-9_]{1,15}$/, {
+      message: "Please enter a valid Twitter/X username",
+    })
+    .optional()
+    .or(z.literal("")),
+  linkedin: z
+    .string()
+    .url({
+      message: "Please enter a valid LinkedIn URL",
+    })
+    .optional()
+    .or(z.literal("")),
   googleScholarUrl: z
     .string()
     .url({
@@ -39,6 +53,8 @@ interface ProfileFormProps {
     name: string
     email: string
     image?: string | null
+    twitter?: string | null
+    linkedin?: string | null
     googleScholarUrl?: string | null
     patentsToDisplay?: number | null
   }
@@ -54,6 +70,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user.name || "",
+      twitter: user.twitter || "",
+      linkedin: user.linkedin || "",
       googleScholarUrl: user.googleScholarUrl || "",
       patentsToDisplay: user.patentsToDisplay || 3,
     },
@@ -156,6 +174,53 @@ export function ProfileForm({ user }: ProfileFormProps) {
               <div className="text-sm text-muted-foreground">
                 Email: {user.email} <span className="text-xs">(cannot be changed)</span>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media</CardTitle>
+              <CardDescription>
+                Connect your social media profiles to display on your resume
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="twitter"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Twitter/X Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="@username"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormDescription>Enter your Twitter/X username (e.g. @username)</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn Profile URL</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://linkedin.com/in/yourprofile"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormDescription>Enter the full URL to your LinkedIn profile</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
