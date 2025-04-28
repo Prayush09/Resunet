@@ -199,9 +199,15 @@ export function ResumeList({ resumes }: ResumeListProps) {
                   <Calendar className="mr-1 h-3 w-3" />
                   <CardDescription className="text-xs">Updated {updatedDuration}</CardDescription>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-3 h-14">
-                  {resume.summary || "No summary provided"}
-                </p>
+                {resume.summary && (
+                <div
+                  className="prose prose-sm max-w-none dark:prose-invert pl-8 [&_p]:leading-relaxed [&_li]:leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: resume.summary,
+                  }}
+                >
+              </div>
+          )}
               </CardContent>
               <CardFooter className="pt-0">
                 <div className="flex w-full gap-2">
