@@ -227,15 +227,20 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           </div>
 
           <div className="p-6 md:p-8" ref={resumeRef}>
-            {resume.summary && (
+          {resume.summary && (
               <div className="mb-6 animate-fadeIn">
                 <div className="flex items-center gap-2 mb-3">
                   <h2 className="text-xl font-semibold text-primary">Summary</h2>
                   <Separator className="flex-1" />
                 </div>
-                <p className="text-muted-foreground leading-snug">{resume.summary}</p>
+                <div
+                  className="prose prose-slate max-w-none dark:prose-invert leading-snug"
+                  dangerouslySetInnerHTML={{
+                    __html: resume.summary,
+                  }}
+                />
               </div>
-            )}
+          )}
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">

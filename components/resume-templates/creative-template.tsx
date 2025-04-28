@@ -268,15 +268,20 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
           </div>
 
           <div className="p-8" ref={resumeRef}>
-            {resume.summary && (
+          {resume.summary && (
               <div className="mb-6 animate-fadeIn">
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-xl font-bold tracking-tight">Summary</h2>
                   <div className="flex-1 h-0.5 bg-gradient-to-r from-gray-500 to-transparent dark:from-primary-400/30 dark:to-transparent rounded-full" />
                 </div>
-                <p className="text-muted-foreground leading-[1.15] text-lg pl-8">{resume.summary}</p>
+                <div
+                  className="prose prose-sm max-w-none dark:prose-invert pl-8 [&_p]:leading-relaxed [&_li]:leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: resume.summary,
+                  }}
+                />
               </div>
-            )}
+          )}
 
             <div className="grid md:grid-cols-3 gap-5">
               <div className="md:col-span-2 space-y-4">

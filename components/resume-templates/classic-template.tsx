@@ -247,27 +247,24 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
                   </div>
                 </div>
 
-                {resume.user?.email && (
-                  <div className="mt-2 md:mt-1">
-                    <div className="inline-flex items-center gap-1 text-xs bg-primary/10 px-2 py-1 rounded-full">
-                      <Mail className="h-3 w-3 text-primary" />
-                      <span>{resume.user.email}</span>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
 
           <div className="p-6" ref={resumeRef}>
             {resume.summary && (
-              <div className="mb-5 animate-fadeIn">
-                <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-lg font-bold tracking-tight text-primary">Summary</h2>
-                  <Separator className="flex-1" />
-                </div>
-                <p className="text-muted-foreground leading-tight text-base pl-3">{resume.summary}</p>
-              </div>
+                      <div className="mb-5 animate-fadeIn">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h2 className="text-lg font-bold tracking-tight text-primary">Summary</h2>
+                          <Separator className="flex-1" />
+                        </div>
+                        <div 
+                          className="prose prose-slate max-w-none dark:prose-invert pl-3"
+                          dangerouslySetInnerHTML={{
+                            __html: resume.summary,
+                          }}
+                        />
+                      </div>
             )}
 
             <div className="grid md:grid-cols-3 gap-4">
