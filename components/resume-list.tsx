@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { formatDistanceToNow } from "date-fns"
-import { Calendar, Copy, Edit, ExternalLink, FileText, MoreHorizontal, Trash } from "lucide-react"
+import { Calendar, Copy, Edit, ExternalLink, FileText, MoreHorizontal, Trash, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -68,15 +68,23 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const { toast } = useToast()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isCopying, setCopying] = useState<string | null>(null)
+  const [loadingResumeId, setLoadingResumeId] = useState<string | null>(null)
+  const [loadingViewId, setLoadingViewId] = useState<string | null>(null)
 
   const handleCopyLink = async (id: string) => {
-    // Use the current origin for the link
-    const link = `${window.location.origin}/r/${id}`
-    await navigator.clipboard.writeText(link)
-    toast({
-      title: "Link copied",
-      description: "Resume link copied to clipboard",
-    })
+    setCopying(id)
+    try {
+      // Use the current origin for the link
+      const link = `${window.location.origin}/r/${id}`
+      await navigator.clipboard.writeText(link)
+      toast({
+        title: "Link copied",
+        description: "Resume link copied to clipboard",
+      })
+    } finally {
+      setCopying(null)
+    }
   }
 
   const handleDelete = async () => {
@@ -108,6 +116,16 @@ export function ResumeList({ resumes }: ResumeListProps) {
       setIsDeleting(false)
       setDeleteId(null)
     }
+  }
+
+  const handleEdit = (id: string) => {
+    setLoadingResumeId(id)
+    // Will be handled by Next.js navigation
+  }
+
+  const handleView = (id: string) => {
+    setLoadingViewId(id)
+    // Will be handled by Next.js navigation
   }
 
   // Sort resumes by updatedAt date (newest first)
@@ -153,9 +171,16 @@ export function ResumeList({ resumes }: ResumeListProps) {
                           Edit
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleCopyLink(resume.id)}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy Link
+                      <DropdownMenuItem 
+                        onClick={() => handleCopyLink(resume.id)}
+                        disabled={isCopying === resume.id}
+                      >
+                        {isCopying === resume.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Copy className="mr-2 h-4 w-4" />
+                        )}
+                        {isCopying === resume.id ? "Copying..." : "Copy Link"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -180,17 +205,43 @@ export function ResumeList({ resumes }: ResumeListProps) {
               </CardContent>
               <CardFooter className="pt-0">
                 <div className="flex w-full gap-2">
-                  <Button variant="outline" asChild className="flex-1">
-                    <Link href={`/resume/${resume.id}/edit`}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </Link>
+                  <Button 
+                    variant="outline" 
+                    asChild={loadingResumeId !== resume.id}
+                    className="flex-1"
+                    disabled={loadingResumeId === resume.id}
+                    onClick={loadingResumeId !== resume.id ? () => handleEdit(resume.id) : undefined}
+                  >
+                    {loadingResumeId === resume.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <Link href={`/resume/${resume.id}/edit`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Link>
+                    )}
                   </Button>
-                  <Button variant="default" asChild className="flex-1">
-                    <Link href={`/r/${resume.id}`} target="_blank">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      View
-                    </Link>
+                  <Button 
+                    variant="default" 
+                    asChild={loadingViewId !== resume.id}
+                    className="flex-1"
+                    disabled={loadingViewId === resume.id}
+                    onClick={loadingViewId !== resume.id ? () => handleView(resume.id) : undefined}
+                  >
+                    {loadingViewId === resume.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <Link href={`/r/${resume.id}`} target="_blank">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        View
+                      </Link>
+                    )}
                   </Button>
                 </div>
               </CardFooter>
@@ -214,7 +265,14 @@ export function ResumeList({ resumes }: ResumeListProps) {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
