@@ -697,6 +697,105 @@ export function RichTextEditor({
             >
               <UnderlineIcon className="h-4 w-4" />
             </Toggle>
+          </div>
+        </BubbleMenu>
+      )}
+
+      {!readOnly && editor && (
+        <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
+          <div className="flex items-center bg-background border rounded-md shadow-md overflow-hidden">
+            <Toggle
+              size="sm"
+              pressed={editor.isActive("heading", { level: 1 })}
+              onPressedChange={() => toggleHeading(1)}
+              aria-label="Toggle heading 1"
+            >
+              <Heading1 className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              size="sm"
+              pressed={editor.isActive("heading", { level: 2 })}
+              onPressedChange={() => toggleHeading(2)}
+              aria-label="Toggle heading 2"
+            >
+              <Heading2 className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              size="sm"
+              pressed={editor.isActive("bulletList")}
+              onPressedChange={toggleBulletList}
+              aria-label="Toggle bullet list"
+            >
+              <List className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              size="sm"
+              pressed={editor.isActive("orderedList")}
+              onPressedChange={toggleOrderedList}
+              aria-label="Toggle ordered list"
+            >
+              <ListOrdered className="h-4 w-4" />
+            </Toggle>
+          </div>
+        </FloatingMenu>
+      )}
+
+      <div className="relative">
+        <EditorContent editor={editor} className={cn("min-h-[200px]", readOnly ? "cursor-default" : "")} />
+
+        {showPlaceholder && !readOnly && (
+          <div className="absolute top-[20px] left-[20px] text-muted-foreground pointer-events-none">{placeholder}</div>
+        )}
+      </div>
+
+      <style>{`
+        /* Improve vertical spacing */
+        .ProseMirror p {
+          margin-top: 0.5em;
+          margin-bottom: 0.5em;
+          line-height: 1.15;
+        }
+        .ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
+          margin-top: 0.8em;
+          margin-bottom: 0.3em;
+          line-height: 1.15;
+        }
+        .ProseMirror ul, .ProseMirror ol {
+          margin-top: 0.5em;
+          margin-bottom: 0.5em;
+        }
+        .ProseMirror li {
+          margin-top: 0.125em;
+          margin-bottom: 0.125em;
+        }
+        .ProseMirror blockquote {
+          margin-top: 0.75em;
+          margin-bottom: 0.75em;
+          line-height: 1.15;
+        }
+      `}</style>
+      {!readOnly && editor && (
+        <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+          <div className="flex items-center flex-wrap bg-background border rounded-md shadow-md overflow-hidden p-1">
+            <Toggle size="sm" pressed={editor.isActive("bold")} onPressedChange={toggleBold} aria-label="Toggle bold">
+              <Bold className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              size="sm"
+              pressed={editor.isActive("italic")}
+              onPressedChange={toggleItalic}
+              aria-label="Toggle italic"
+            >
+              <Italic className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              size="sm"
+              pressed={editor.isActive("underline")}
+              onPressedChange={toggleUnderline}
+              aria-label="Toggle underline"
+            >
+              <UnderlineIcon className="h-4 w-4" />
+            </Toggle>
 
             <div className="w-px h-6 bg-border mx-1" />
 
