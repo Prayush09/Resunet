@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { Download, User, ExternalLink, FileText, Mail, Linkedin, Twitter } from "lucide-react"
+import { Download, User, ExternalLink, FileText, Mail, Linkedin, Twitter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
@@ -30,6 +31,8 @@ interface ResumeUser {
   name?: string
   email?: string
   image?: string | null
+  linkedin?: string
+  twitter?: string
   linkedin?: string
   twitter?: string
 }
@@ -115,6 +118,10 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
                   value={skill.proficiency} 
                   className="h-2 bg-primary/10" 
                 />
+                <Progress 
+                  value={skill.proficiency} 
+                  className="h-2 bg-primary/10" 
+                />
               </CardContent>
             </Card>
           ))}
@@ -185,6 +192,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 py-8">
       <div className="container max-w-4xl mx-auto px-4">
         <Card className="overflow-hidden shadow-xl border-0 rounded-xl">
           <div className="bg-gradient-to-r from-primary/20 to-primary/5 p-6">
@@ -196,6 +204,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
                   referrerPolicy="no-referrer"
                   loading="eager"
                 />
+                <AvatarFallback className="text-2xl bg-primary/10">
                 <AvatarFallback className="text-2xl bg-primary/10">
                   {resume.user?.name ? resume.user.name.charAt(0).toUpperCase() : <User className="h-12 w-12" />}
                 </AvatarFallback>
@@ -275,8 +284,11 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
         </Card>
 
         <div className="mt-6 flex justify-center gap-4">
+        <div className="mt-6 flex justify-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="lg" className="group" disabled={isExporting}>
+                <Download className="mr-2 h-5 w-5 transition-transform group-hover:-translate-y-1" />
               <Button variant="outline" size="lg" className="group" disabled={isExporting}>
                 <Download className="mr-2 h-5 w-5 transition-transform group-hover:-translate-y-1" />
                 {isExporting ? "Exporting..." : "Export"}
@@ -299,7 +311,9 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
           </DropdownMenu>
 
           <Button variant="outline" size="lg" className="group" asChild>
+          <Button variant="outline" size="lg" className="group" asChild>
             <a href={`${window.location.origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="mr-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               <ExternalLink className="mr-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               Share Link
             </a>
@@ -310,9 +324,11 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(8px); }
+          from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fadeIn {
+          animation: fadeIn 0.4s ease-out forwards;
           animation: fadeIn 0.4s ease-out forwards;
         }
         .prose h1, .prose h2, .prose h3, .prose h4 {
@@ -334,6 +350,7 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
           line-height: 1.15;
         }
         .prose strong {
+          color: hsl(var(--primary));
           color: hsl(var(--primary));
           font-weight: 600;
         }

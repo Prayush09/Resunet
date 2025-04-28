@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Download, User, ExternalLink, FileText, Mail, Award, Briefcase, GraduationCap, Linkedin, Twitter } from "lucide-react"
+import { Download, User, ExternalLink, FileText, Mail, Award, Briefcase, GraduationCap, Linkedin, Twitter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
@@ -12,6 +13,8 @@ interface ResumeUser {
   name?: string;
   email?: string;
   image?: string;
+  linkedin?: string;
+  twitter?: string;
   linkedin?: string;
   twitter?: string;
 }
@@ -59,6 +62,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
 
   useEffect(() => {
     setOrigin(typeof window !== "undefined" ? window.location.origin : "")
+    setOrigin(typeof window !== "undefined" ? window.location.origin : "")
   }, []);
 
   const getSectionIcon = (type: string) => {
@@ -92,6 +96,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
       <div key={section.id} className="mb-6 animate-fadeIn hover:translate-x-1 transition-transform">
         <div className="flex items-center gap-3 mb-2">
           {getSectionIcon(section.type)}
+          <h3 className="text-xl font-bold tracking-tight">{sectionTitle}</h3>
           <h3 className="text-xl font-bold tracking-tight">{sectionTitle}</h3>
           <div className="flex-1 h-0.5 bg-gradient-to-r from-primary/50 to-transparent rounded-full" />
         </div>
@@ -193,6 +198,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 dark:from-background dark:via-background dark:to-primary/10 py-8">
       <div className="container max-w-4xl mx-auto px-4">
         <Card className="overflow-hidden shadow-xl border-0 rounded-2xl">
+        <Card className="overflow-hidden shadow-xl border-0 rounded-2xl">
           <div className="relative">
             <div className='absolute inset-0 bg-gradient-to-r from-black to-gray-100 dark:from-gray-900 dark:to-slate-950 opacity-85' />
             <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,0,0,0.1),transparent_75%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.05),transparent_75%)]' />
@@ -268,6 +274,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
           </div>
 
           <div className="p-8" ref={resumeRef}>
+          <div className="p-8" ref={resumeRef}>
             {resume.summary && (
               <div className="mb-6 animate-fadeIn">
                 <div className="flex items-center gap-3 mb-2">
@@ -327,9 +334,11 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
       <style jsx global>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(8px); }
+          from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fadeIn {
+          animation: fadeIn 0.4s ease-out forwards;
           animation: fadeIn 0.4s ease-out forwards;
         }
         .prose h1, .prose h2, .prose h3, .prose h4 {

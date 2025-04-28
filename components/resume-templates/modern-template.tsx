@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { Download, User, ExternalLink, FileText, Mail, Twitter, Linkedin } from "lucide-react"
+import { Download, User, ExternalLink, FileText, Mail, Twitter, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
@@ -14,6 +15,8 @@ interface ResumeUser {
   name?: string;
   email?: string;
   image?: string;
+  twitter?: string;
+  linkedin?: string;
   twitter?: string;
   linkedin?: string;
 }
@@ -75,10 +78,13 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
     return (
       <div key={section.id} className="mb-6 animate-fadeIn">
         <div className="flex items-center gap-2 mb-3">
+      <div key={section.id} className="mb-6 animate-fadeIn">
+        <div className="flex items-center gap-2 mb-3">
           <h3 className="text-xl font-semibold text-primary">{sectionTitle}</h3>
           <Separator className="flex-1" />
         </div>
         <div
+          className="prose prose-slate max-w-none dark:prose-invert leading-snug"
           className="prose prose-slate max-w-none dark:prose-invert leading-snug"
           dangerouslySetInnerHTML={{
             __html: section.content,
@@ -94,9 +100,12 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
     return (
       <div className="mb-6 animate-fadeIn">
         <div className="flex items-center gap-2 mb-3">
+      <div className="mb-6 animate-fadeIn">
+        <div className="flex items-center gap-2 mb-3">
           <h3 className="text-xl font-semibold text-primary">Skills</h3>
           <Separator className="flex-1" />
         </div>
+        <div className="space-y-2.5">
         <div className="space-y-2.5">
           {resume.skills.map((skill: ResumeSkill) => (
             <div key={skill.id} className="space-y-1">
@@ -118,12 +127,15 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
     return (
       <div className="mb-6 animate-fadeIn">
         <div className="flex items-center gap-2 mb-3">
+      <div className="mb-6 animate-fadeIn">
+        <div className="flex items-center gap-2 mb-3">
           <h3 className="text-xl font-semibold text-primary">Patents</h3>
           <Separator className="flex-1" />
         </div>
         <div className="space-y-4">
           {resume.patents.map((patent: ResumePatent) => (
             <Card key={patent.id} className="bg-muted/30 border-l-4 border-l-primary">
+              <CardContent className="p-4 space-y-1">
               <CardContent className="p-4 space-y-1">
                 <h4 className="font-medium">{patent.title}</h4>
                 <p className="text-sm text-muted-foreground">{patent.authors}</p>
@@ -226,20 +238,27 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           </div>
 
           <div className="p-6 md:p-8" ref={resumeRef}>
+          <div className="p-6 md:p-8" ref={resumeRef}>
             {resume.summary && (
+              <div className="mb-6 animate-fadeIn">
+                <div className="flex items-center gap-2 mb-3">
               <div className="mb-6 animate-fadeIn">
                 <div className="flex items-center gap-2 mb-3">
                   <h2 className="text-xl font-semibold text-primary">Summary</h2>
                   <Separator className="flex-1" />
                 </div>
                 <p className="text-muted-foreground leading-snug">{resume.summary}</p>
+                <p className="text-muted-foreground leading-snug">{resume.summary}</p>
               </div>
             )}
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 space-y-6">
                 {resume.sections.filter((s: ResumeSection) => s.type !== "SKILLS").map(renderSection)}
               </div>
+              <div className="space-y-6">
               <div className="space-y-6">
                 {renderSkills()}
                 {renderPatents()}
@@ -295,8 +314,13 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           color: hsl(var(--primary));
           margin-top: 1.2em;
           margin-bottom: 0.4em;
+          margin-top: 1.2em;
+          margin-bottom: 0.4em;
         }
         .prose p, .prose ul, .prose ol {
+          margin-top: 0.4em;
+          margin-bottom: 0.4em;
+          line-height: 1.4;
           margin-top: 0.4em;
           margin-bottom: 0.4em;
           line-height: 1.4;
