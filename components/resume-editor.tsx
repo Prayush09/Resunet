@@ -259,7 +259,6 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
                       <RichTextEditor
                         content={field.value || ""}
                         onChange={field.onChange}
-                        placeholder="Write a brief summary of your professional background and key qualifications..."
                         sectionType="summary"
                       />
                     </FormControl>
