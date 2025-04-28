@@ -139,7 +139,6 @@ const FONT_SIZES = [
 export function RichTextEditor({
   content,
   onChange,
-  placeholder = "Start typing...",
   className = "",
   readOnly = false,
   sectionType = "general",
@@ -742,10 +741,6 @@ export function RichTextEditor({
 
       <div className="relative">
         <EditorContent editor={editor} className={cn("min-h-[200px]", readOnly ? "cursor-default" : "")} />
-
-        {showPlaceholder && !readOnly && (
-          <div className="absolute top-[20px] left-[20px] text-muted-foreground pointer-events-none">{placeholder}</div>
-        )}
       </div>
 
       <style>{`
@@ -909,10 +904,6 @@ export function RichTextEditor({
 
       <div className="relative">
         <EditorContent editor={editor} className={cn("min-h-[200px]", readOnly ? "cursor-default" : "")} />
-
-        {showPlaceholder && !readOnly && (
-          <div className="absolute top-[20px] left-[20px] text-muted-foreground pointer-events-none">{placeholder}</div>
-        )}
       </div>
 
       <style>{`
