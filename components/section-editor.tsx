@@ -1,13 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
-import { Edit, Grip, Loader2, Plus, Trash } from "lucide-react"
+import { Edit, Grip, Plus, Trash } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion" // Import for animations
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import {
+import { useToast } from "@/hooks/use-toast"
+import { SectionEditorModal } from "@/components/section-editor-modal"
+import { 
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -16,15 +19,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { useToast } from "@/hooks/use-toast"
-import { SectionEditorModal } from "@/components/section-editor-modal"
+} from "@/components/ui/alert-dialog" // Import AlertDialog components
 
+// Update the Section interface to include customName
 interface Section {
   id: string
   type: string
   content: string
   order: number
+  customName?: string
 }
 
 interface SectionEditorProps {
@@ -39,14 +42,19 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSection, setEditingSection] = useState<Section | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  
+  // Add state for delete confirmation
   const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [loadingEditId, setLoadingEditId] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
+  // Update sections when initialSections change
+  useEffect(() => {
+    setSections(initialSections)
+  }, [initialSections])
 
   const handleOpenModal = (section?: Section) => {
     if (section) {
       setEditingSection(section)
-      setLoadingEditId(null)
     } else {
       setEditingSection({
         id: "",
@@ -65,27 +73,50 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
     }, 300) // Wait for animation to complete
   }
 
-  const handleSaveSection = async (sectionData: Section) => {
+  // Open delete confirmation dialog
+  const handleOpenDeleteDialog = (id: string) => {
+    setDeletingSectionId(id)
+    setIsDeleteDialogOpen(true)
+  }
+
+  // Close delete confirmation dialog
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false)
+    setTimeout(() => {
+      setDeletingSectionId(null)
+    }, 300) // Wait for animation to complete
+  }
+
+  // Make sure the handleSaveSection function passes customName
+  const handleSaveSection = async (section: Section) => {
     setIsSaving(true)
     try {
-      if (sectionData.id) {
+      let updatedSection: Section;
+      
+      if (section.id) {
         // Update existing section
-        const response = await fetch(`/api/sections/${sectionData.id}`, {
+        const response = await fetch(`/api/sections/${section.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            type: sectionData.type,
-            content: sectionData.content,
+            type: section.type,
+            content: section.content,
+            customName: section.customName,
           }),
         })
 
         if (!response.ok) {
           throw new Error("Failed to update section")
         }
-
-        setSections(sections.map((s) => (s.id === sectionData.id ? sectionData : s)))
+        
+        updatedSection = await response.json()
+        
+        // Update local state immediately
+        setSections(prevSections => 
+          prevSections.map(s => s.id === section.id ? {...s, ...updatedSection} : s)
+        )
       } else {
         // Create new section
         const response = await fetch("/api/sections", {
@@ -95,57 +126,44 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
           },
           body: JSON.stringify({
             resumeId,
-            type: sectionData.type,
-            content: sectionData.content,
-            order: sectionData.order,
+            type: section.type,
+            content: section.content,
+            order: sections.length,
+            customName: section.customName,
           }),
         })
 
         if (!response.ok) {
           throw new Error("Failed to create section")
         }
-
-        const newSection = await response.json()
-        setSections([...sections, newSection])
+        
+        updatedSection = await response.json()
+        
+        // Add new section to local state immediately
+        setSections(prevSections => [...prevSections, updatedSection])
       }
 
       handleCloseModal()
-      toast({
-        title: sectionData.id ? "Section updated" : "Section added",
-        description: sectionData.id
-          ? "Your section has been updated successfully"
-          : "Your section has been added successfully",
-      })
       router.refresh()
+      toast({
+        title: section.id ? "Section updated" : "Section created",
+        description: section.id ? "Your section has been updated" : "Your section has been created",
+      })
     } catch (error) {
+      console.error("Error saving section:", error)
       toast({
         title: "Error",
         description: "Failed to save section",
         variant: "destructive",
       })
-      console.error("Error saving section:", error)
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleEditClick = (section: Section) => {
-    setLoadingEditId(section.id)
-    setTimeout(() => {
-      handleOpenModal(section)
-    }, 300) // Simulate a brief loading time for the edit operation
-  }
-
-  const confirmDelete = (id: string) => {
-    setDeletingSectionId(id)
-  }
-
-  const handleDeleteSection = async () => {
-    if (!deletingSectionId) return
-    
-    setIsDeleting(true)
+  const handleDeleteSection = async (id: string) => {
     try {
-      const response = await fetch(`/api/sections/${deletingSectionId}`, {
+      const response = await fetch(`/api/sections/${id}`, {
         method: "DELETE",
       })
 
@@ -153,7 +171,9 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
         throw new Error("Failed to delete section")
       }
 
-      setSections(sections.filter((s) => s.id !== deletingSectionId))
+      // Update local state immediately with animation
+      setSections(prev => prev.filter(s => s.id !== id))
+      
       toast({
         title: "Section deleted",
         description: "Your section has been deleted successfully",
@@ -167,11 +187,10 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
       })
       console.error("Error deleting section:", error)
     } finally {
-      setIsDeleting(false)
-      setDeletingSectionId(null)
+      handleCloseDeleteDialog()
     }
   }
-
+  
   const handleDragEnd = async (result: any) => {
     if (!result.destination) return
 
@@ -184,6 +203,7 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
       order: index,
     }))
 
+    // Update local state immediately
     setSections(updatedSections)
 
     try {
@@ -206,6 +226,9 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
 
       router.refresh()
     } catch (error) {
+      // Revert to original state if there's an error
+      setSections(sections)
+      
       toast({
         title: "Error",
         description: "Failed to reorder sections",
@@ -215,22 +238,26 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
     }
   }
 
-  const getSectionTypeName = (type: string) => {
-    switch (type) {
+  const getSectionTitle = (section: Section) => {
+    if (section.customName) {
+      return section.customName
+    }
+
+    switch (section.type) {
       case "EDUCATION":
         return "Education"
       case "EXPERIENCE":
         return "Experience"
-      case "SKILLS":
-        return "Skills"
       case "PROJECTS":
         return "Projects"
       case "CERTIFICATIONS":
         return "Certifications"
+      case "SKILLS":
+        return "Skills"
       case "CUSTOM":
-        return "Custom"
+        return "Custom Section"
       default:
-        return type
+        return "Section"
     }
   }
 
@@ -245,7 +272,12 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
       </div>
 
       {sections.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg bg-muted/50">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-center py-12 border rounded-lg bg-muted/50"
+        >
           <h3 className="text-lg font-medium mb-2">No sections yet</h3>
           <p className="text-muted-foreground mb-4">
             Add sections to your resume to showcase your experience, education, and skills.
@@ -254,62 +286,61 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
             <Plus className="mr-2 h-4 w-4" />
             Add Your First Section
           </Button>
-        </div>
+        </motion.div>
       ) : (
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="sections">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                {sections.map((section, index) => (
-                  <Draggable key={section.id} draggableId={section.id} index={index}>
-                    {(provided) => (
-                      <Card ref={provided.innerRef} {...provided.draggableProps} className="border">
-                        <CardHeader className="flex flex-row items-center justify-between py-4">
-                          <div className="flex items-center">
-                            <div {...provided.dragHandleProps} className="mr-2 cursor-grab">
-                              <Grip className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <CardTitle className="text-lg">{getSectionTypeName(section.type)}</CardTitle>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pb-4">
-                          <div className="prose prose-sm max-w-none">
-                            <div dangerouslySetInnerHTML={{ __html: section.content }} />
-                          </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-end gap-2 pt-0">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleEditClick(section)}
-                            disabled={loadingEditId === section.id}
+                <AnimatePresence>
+                  {sections.map((section, index) => (
+                    <Draggable key={section.id} draggableId={section.id} index={index}>
+                      {(provided) => (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Card 
+                            ref={provided.innerRef} 
+                            {...provided.draggableProps} 
+                            className="border"
                           >
-                            {loadingEditId === section.id ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Loading...
-                              </>
-                            ) : (
-                              <>
+                            <CardHeader className="flex flex-row items-center justify-between py-4">
+                              <div className="flex items-center">
+                                <div {...provided.dragHandleProps} className="mr-2 cursor-grab">
+                                  <Grip className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <CardTitle className="text-lg">{getSectionTitle(section)}</CardTitle>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="pb-4">
+                              <div className="prose prose-sm max-w-none">
+                                <div dangerouslySetInnerHTML={{ __html: section.content }} />
+                              </div>
+                            </CardContent>
+                            <CardFooter className="flex justify-end gap-2 pt-0">
+                              <Button variant="outline" size="sm" onClick={() => handleOpenModal(section)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => confirmDelete(section.id)}
-                          >
-                            <Trash className="mr-2 h-4 w-4" />
-                            Delete
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    )}
-                  </Draggable>
-                ))}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => handleOpenDeleteDialog(section.id)}
+                              >
+                                <Trash className="mr-2 h-4 w-4" />
+                                Delete
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </motion.div>
+                      )}
+                    </Draggable>
+                  ))}
+                </AnimatePresence>
                 {provided.placeholder}
               </div>
             )}
@@ -326,29 +357,21 @@ export function SectionEditor({ resumeId, initialSections }: SectionEditorProps)
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingSectionId} onOpenChange={(open) => !open && setDeletingSectionId(null)}>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this section?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the section and remove all its content from your resume.
+              This will permanently delete this section from your resume. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteSection}
-              disabled={isDeleting}
+            <AlertDialogCancel onClick={handleCloseDeleteDialog}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deletingSectionId && handleDeleteSection(deletingSectionId)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

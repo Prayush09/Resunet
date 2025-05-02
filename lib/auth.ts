@@ -137,20 +137,27 @@ export const authOptions: NextAuthOptions = {
               // Link the Google account to the existing user
               console.log("Linking Google account to existing user:", existingUser.email)
 
-              await db.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state,
-                },
-              })
+              try {
+                await db.account.create({
+                  data: {
+                    userId: existingUser.id,
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    access_token: account.access_token,
+                    expires_at: account.expires_at,
+                    token_type: account.token_type,
+                    scope: account.scope,
+                    id_token: account.id_token,
+                    session_state: account.session_state,
+                  },
+                })
+              } catch (error) {
+                console.error("Error linking Google account:", error)
+                // If there's an error linking the account, we still want to allow sign-in
+                // This could happen if the account is already linked to another user
+                // In that case, we'll just continue with the sign-in
+              }
             } else {
               console.log("Google account already linked to user:", existingUser.email)
             }

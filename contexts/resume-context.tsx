@@ -476,8 +476,3 @@ export function useResume() {
   }
   return context
 }
-
-
-//TODO: Add mobile number to profile section
-
-//TODO: TEST ALL THE FUNCTIONALITY AND MAKE SURE IT WORKS AS EXPECTED
