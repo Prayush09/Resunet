@@ -222,7 +222,7 @@ export default function Home() {
       <footer className="border-t py-6 bg-background/80 backdrop-blur-lg">
         <div className="w-full flex flex-col items-center justify-between gap-4 md:flex-row px-4">
           <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Resunet. All rights reserved.</p>
-          <p className="text-sm text-muted-foreground">made with love by <a href="https://github.com/Resunet" className="text-primary font-medium hover:underline">Prayush</a></p>
+          <p className="text-sm text-muted-foreground">made with love by <a href="https://github.com/Resunet" className="text-primary font-medium hover:underline">Prayush | Akshit | Hazash</a></p>
         </div>
       </footer>
     </div>
