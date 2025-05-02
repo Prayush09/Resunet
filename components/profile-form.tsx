@@ -16,11 +16,17 @@ import { useToast } from "@/hooks/use-toast"
 import { Icons } from "@/components/icons"
 import { ProfileImageUpdater } from "@/components/profile-image-updater"
 
-
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters",
   }),
+  mobile: z
+    .string()
+    .regex(/^(\+\d{1,3})?\s?\d{10,14}$/, {
+      message: "Please enter a valid mobile number",
+    })
+    .optional()
+    .or(z.literal("")),
   twitter: z
     .string()
     .regex(/^@?[a-zA-Z0-9_]{1,15}$/, {
@@ -52,6 +58,7 @@ interface ProfileFormProps {
     id: string
     name: string
     email: string
+    mobile?: string | null
     image?: string | null
     twitter?: string | null
     linkedin?: string | null
@@ -70,6 +77,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user.name || "",
+      mobile: user.mobile || "",
       twitter: user.twitter || "",
       linkedin: user.linkedin || "",
       googleScholarUrl: user.googleScholarUrl || "",
@@ -171,6 +179,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="mobile"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mobile Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your mobile number" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormDescription>Enter your mobile number with country code (e.g. +1 1234567890)</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="text-sm text-muted-foreground">
                 Email: {user.email} <span className="text-xs">(cannot be changed)</span>
               </div>
@@ -180,9 +202,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           <Card>
             <CardHeader>
               <CardTitle>Social Media</CardTitle>
-              <CardDescription>
-                Connect your social media profiles to display on your resume
-              </CardDescription>
+              <CardDescription>Connect your social media profiles to display on your resume</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -192,11 +212,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <FormItem>
                     <FormLabel>Twitter/X Username</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="@username"
-                        {...field}
-                        value={field.value || ""}
-                      />
+                      <Input placeholder="@username" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormDescription>Enter your Twitter/X username (e.g. @username)</FormDescription>
                     <FormMessage />
@@ -210,11 +226,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <FormItem>
                     <FormLabel>LinkedIn Profile URL</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="https://linkedin.com/in/yourprofile"
-                        {...field}
-                        value={field.value || ""}
-                      />
+                      <Input placeholder="https://linkedin.com/in/yourprofile" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormDescription>Enter the full URL to your LinkedIn profile</FormDescription>
                     <FormMessage />

@@ -657,8 +657,10 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
                           msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                         }`}
                       >
-                        <div className="prose dark:prose-invert max-w-none">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        <div className="prose dark:prose-invert max-w-none break-words overflow-hidden">
+                          <div className="text-wrap whitespace-pre-wrap break-words">
+                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+                          </div>
                         </div>
                         {msg.role === "assistant" && msg.content.length > 20 && (
                           <div className="flex flex-wrap mt-2 gap-2">
@@ -727,11 +729,11 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
                     <div className="rounded-lg px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
                       <div className="text-sm">
                         <p className="font-medium">Suggestion:</p>
-                        <p>
-                          Replace "<span className="text-red-500">{realTimeSuggestion.originalPhrase}</span>" with "
-                          <span className="text-green-500">{realTimeSuggestion.suggestion}</span>"
+                        <p className="break-words">
+                          Replace "<span className="text-red-500 break-words">{realTimeSuggestion.originalPhrase}</span>" with "
+                          <span className="text-green-500 break-words">{realTimeSuggestion.suggestion}</span>"
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">{realTimeSuggestion.reason}</p>
+                        <p className="text-xs text-muted-foreground mt-1 break-words">{realTimeSuggestion.reason}</p>
                         <div className="flex mt-2 space-x-2">
                           <Button
                             variant="outline"
@@ -874,8 +876,10 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
                         msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                       }`}
                     >
-                      <div className="prose dark:prose-invert max-w-none">
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <div className="prose dark:prose-invert max-w-none break-words overflow-hidden">
+                        <div className="text-wrap whitespace-pre-wrap break-words">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
                       </div>
                       {msg.role === "assistant" && msg.content.length > 20 && (
                         <div className="flex flex-wrap mt-2 gap-2">
@@ -944,11 +948,11 @@ export function ResumeAIHelper({ resumeData, activeTab, onSuggestionApply }: Res
                   <div className="rounded-lg px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
                     <div className="text-sm">
                       <p className="font-medium">Suggestion:</p>
-                      <p>
-                        Replace "<span className="text-red-500">{realTimeSuggestion.originalPhrase}</span>" with "
-                        <span className="text-green-500">{realTimeSuggestion.suggestion}</span>"
+                      <p className="break-words">
+                        Replace "<span className="text-red-500 break-words">{realTimeSuggestion.originalPhrase}</span>" with "
+                        <span className="text-green-500 break-words">{realTimeSuggestion.suggestion}</span>"
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">{realTimeSuggestion.reason}</p>
+                      <p className="text-xs text-muted-foreground mt-1 break-words">{realTimeSuggestion.reason}</p>
                       <div className="flex mt-2 space-x-2">
                         <Button
                           variant="outline"

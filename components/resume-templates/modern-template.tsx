@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Download, User, ExternalLink, FileText, Mail, Twitter, Linkedin } from "lucide-react"
+import { Download, User, ExternalLink, FileText, Mail, Twitter, Linkedin, Phone } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { jsPDF } from "jspdf"
-import html2canvas from "html2canvas"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface ResumeUser {
   name?: string;
@@ -41,6 +41,7 @@ interface ResumeSection {
   id: string;
   type: "EDUCATION" | "EXPERIENCE" | "PROJECTS" | "CERTIFICATIONS" | "SKILLS" | "CUSTOM";
   content: string;
+  customName: string
 }
 
 interface Resume {
@@ -95,7 +96,8 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
 
   const renderSection = (section: ResumeSection) => {
     const sectionTitle =
-      section.type === "EDUCATION"
+      section.customName ||
+      (section.type === "EDUCATION"
         ? "Education"
         : section.type === "EXPERIENCE"
           ? "Experience"
@@ -105,7 +107,8 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
               ? "Certifications"
               : section.type === "SKILLS"
                 ? "Skills"
-                : "Custom"
+                : "Custom")
+
 
     return (
       <div key={section.id} className="mb-6 animate-fadeIn">
@@ -467,17 +470,30 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
                   </div>
 
                   <div className="flex items-center gap-3 mt-2 md:mt-0">
-                    {resume.user?.email && (
-                      <a
-                        href={`mailto:${resume.user.email}`}
-                        className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={resume.user.email}
-                      >
-                        <Mail className="h-5 w-5 text-foreground" />
-                      </a>
-                    )}
+                  {resume.user?.email && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200">
+                              <Mail className="h-4 w-4 text-foreground" />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2">
+                            <p className="text-sm">{resume.user.email}</p>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    {resume.user?.mobile && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200">
+                              <Phone className="h-4 w-4 text-foreground" />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2">
+                            <p className="text-sm">{resume.user.mobile}</p>
+                          </PopoverContent>
+                        </Popover>
+                      )}
                     {resume.user?.twitter && (
                       <a
                         href={`https://twitter.com/${resume.user.twitter}`}

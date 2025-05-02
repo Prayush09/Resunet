@@ -11,7 +11,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from "@/hooks/use-toast"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { jsPDF } from "jspdf"
-import html2canvas from "html2canvas"
 import  stripHtml  from "@/lib/html-utils"
 
 interface Skill {
@@ -68,7 +67,8 @@ export function ClassicTemplate({ resume }: ClassicTemplateProps) {
   const [origin, setOrigin] = useState("")
 
   useEffect(() => {
-    setOrigin(typeof window !== "undefined" ? window.location.origin : "")
+    setOrigin(typeof window !== "undefined" ? window.location.origin : "");
+    console.log("The user's mobile number: ", resume.user?.mobile);
   }, [])
 
   const renderSection = (section: ResumeSection) => {

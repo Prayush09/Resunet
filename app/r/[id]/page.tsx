@@ -42,7 +42,8 @@ export default async function ResumeViewPage({ params }: ResumeViewPageProps) {
             image: true,
             linkedin: true,
             twitter: true,
-            email: true
+            email: true,
+            mobile: true,
           },
         },
         sections: {

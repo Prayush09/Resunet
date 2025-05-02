@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState, useRef, useTransition } from "react"
+import { useState, useRef, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -46,14 +46,17 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
   const [isSaving, setIsSaving] = useState(false)
   const summaryRef = useRef<HTMLTextAreaElement>(null)
   const isDesktop = useMediaQuery("(min-width: 1024px)")
+  const [localResume, setLocalResume] = useState<Resume>(initialResume)
 
   // Use our resume context
-  const { 
-    resume, 
-    activeTab, 
-    setActiveTab, 
-    updateResumeField 
-  } = useResume()
+  const { resume, activeTab, setActiveTab, updateResumeField } = useResume()
+
+  // Update local state when resume from context changes
+  useEffect(() => {
+    if (resume) {
+      setLocalResume(resume)
+    }
+  }, [resume])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,17 +84,17 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
       if (values.title !== resume?.title) {
         await updateResumeField("title", values.title)
       }
-      
+
       // Update summary if changed
       if (values.summary !== resume?.summary) {
         await updateResumeField("summary", values.summary)
       }
-      
+
       // Update template if changed
       if (values.template !== resume?.template) {
         await updateResumeField("template", values.template)
       }
-      
+
       startTransition(() => {
         router.refresh()
       })
@@ -112,11 +115,43 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
     }
   }
 
+  // Real-time update handlers
+  const handleTitleChange = async (value: string) => {
+    form.setValue("title", value)
+    if (value !== resume?.title) {
+      // Update local state immediately for UI
+      setLocalResume(prev => ({...prev, title: value}))
+      await updateResumeField("title", value)
+    }
+  }
+
+  const handleSummaryChange = async (value: string) => {
+    form.setValue("summary", value)
+    if (value !== resume?.summary) {
+      // Update local state immediately for UI
+      setLocalResume(prev => ({...prev, summary: value}))
+      await updateResumeField("summary", value)
+    }
+  }
+
+  const handleTemplateChange = async (value: string) => {
+    form.setValue("template", value)
+    if (value !== resume?.template) {
+      // Update local state immediately for UI
+      setLocalResume(prev => ({...prev, template: value}))
+      await updateResumeField("template", value)
+    }
+  }
+
   // Handler for when AI suggestions should be applied
   const handleSuggestionApply = (content: string, targetField?: string) => {
     // If a target field is specified, update that field
     if (targetField === "summary") {
       form.setValue("summary", content)
+      // Also update local state
+      setLocalResume(prev => ({...prev, summary: content}))
+      handleSummaryChange(content)
+      
       if (summaryRef.current) {
         summaryRef.current.focus()
       }
@@ -137,14 +172,14 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
   if (!resume) return null
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className={cn("space-y-6", isDesktop ? "pr-16" : "")}
     >
       <div className="flex items-center justify-between">
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="text-3xl font-bold tracking-tight"
@@ -153,21 +188,21 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
         </motion.h1>
         <div className="flex items-center gap-2">
           <ShareDialog resumeId={resume.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => window.open(`/r/${resume.id}`)}
             className="transition-transform hover:scale-105"
           >
             <ExternalLink className="mr-2 h-4 w-4" />
             Preview
           </Button>
-          <Button 
-            onClick={form.handleSubmit(onSubmit)} 
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
             disabled={isSaving || isPending}
             className="relative overflow-hidden transition-transform hover:scale-105"
           >
             <AnimatePresence mode="wait">
-              {(isSaving || isPending) ? (
+              {isSaving || isPending ? (
                 <motion.div
                   key="saving"
                   initial={{ opacity: 0 }}
@@ -197,7 +232,7 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
 
       <Form {...form}>
         <form className="space-y-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -210,10 +245,14 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
                 <FormItem>
                   <FormLabel>Resume Title</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="e.g. Software Developer Resume" 
+                    <Input
+                      placeholder="e.g. Software Developer Resume"
                       {...field}
-                      className="transition-all focus:scale-[1.02]" 
+                      onChange={(e) => {
+                        field.onChange(e)
+                        handleTitleChange(e.target.value)
+                      }}
+                      className="transition-all focus:scale-[1.02]"
                     />
                   </FormControl>
                   <FormMessage />
@@ -226,7 +265,13 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Resume Template</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      handleTemplateChange(value)
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="transition-all focus:scale-[1.02]">
                         <SelectValue placeholder="Select a template" />
@@ -243,11 +288,7 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
               )}
             />
           </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <FormField
               control={form.control}
               name="summary"
@@ -258,7 +299,10 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
                     <FormControl>
                       <RichTextEditor
                         content={field.value || ""}
-                        onChange={field.onChange}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          handleSummaryChange(value)
+                        }}
                         sectionType="summary"
                       />
                     </FormControl>
@@ -271,11 +315,7 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
         </form>
       </Form>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <Tabs defaultValue="sections" value={activeTab} onValueChange={setActiveTab} className="mt-8">
           <TabsList className="mb-2">
             <TabsTrigger value="sections">Sections</TabsTrigger>
@@ -292,15 +332,12 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
             >
               <TabsContent value="sections" className="mt-6 relative">
                 <SectionEditor 
-                  resumeId={resume.id} 
-                  initialSections={resume.sections} 
+                  resumeId={localResume.id} 
+                  initialSections={localResume.sections} 
                 />
               </TabsContent>
               <TabsContent value="skills" className="mt-6">
-                <SkillsEditor 
-                  resumeId={resume.id} 
-                  initialSkills={resume.skills} 
-                />
+                <SkillsEditor resumeId={localResume.id} initialSkills={localResume.skills} />
               </TabsContent>
               <TabsContent value="patents" className="mt-6">
                 <PatentsSection />
@@ -314,8 +351,8 @@ export function ResumeEditor({ initialResume }: ResumeEditorProps) {
         resumeData={{
           title: form.watch("title"),
           summary: form.watch("summary") ?? null,
-          sections: resume.sections,
-          skills: resume.skills,
+          sections: localResume.sections,
+          skills: localResume.skills,
         }}
         activeTab={activeTab}
         onSuggestionApply={handleSuggestionApply}

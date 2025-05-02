@@ -152,6 +152,43 @@ export function SkillsEditor({ resumeId, initialSkills }: SkillsEditorProps) {
     }
   }
 
+  // Add this function to handle real-time updates for skill name
+  const handleSkillNameChange = async (id: string, name: string) => {
+    // Update the skill name in real-time
+    await updateSkill(id, { name })
+  }
+
+  // Add this function to handle real-time updates for skill proficiency
+  const handleSkillProficiencyChange = async (id: string, proficiency: number) => {
+    // Update the skill proficiency in real-time
+    await updateSkill(id, { proficiency })
+  }
+
+  const updateSkill = async (id: string, updates: { name?: string; proficiency?: number }) => {
+    try {
+      const response = await fetch(`/api/skills/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update skill")
+      }
+
+      setSkills((prevSkills) => prevSkills.map((skill) => (skill.id === id ? { ...skill, ...updates } : skill)))
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update skill",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -218,27 +255,29 @@ export function SkillsEditor({ resumeId, initialSkills }: SkillsEditorProps) {
               <label htmlFor="skill-name" className="text-sm font-medium">
                 Skill Name
               </label>
-              <Input
-                id="skill-name"
-                placeholder="e.g. JavaScript, Project Management, etc."
-                value={editingSkill?.name || ""}
-                onChange={(e) => setEditingSkill(editingSkill ? { ...editingSkill, name: e.target.value } : null)}
-              />
+              {editingSkill && (
+                <Input
+                  id="skill-name"
+                  placeholder="e.g. JavaScript, Project Management, etc."
+                  value={editingSkill?.name || ""}
+                  onChange={(e) => setEditingSkill({ ...editingSkill, name: e.target.value })}
+                />
+              )}
             </div>
             <div className="grid gap-2">
               <label htmlFor="skill-proficiency" className="text-sm font-medium">
                 Proficiency: {editingSkill?.proficiency || 70}%
               </label>
-              <Slider
-                id="skill-proficiency"
-                min={0}
-                max={100}
-                step={5}
-                value={[editingSkill?.proficiency || 70]}
-                onValueChange={(value) =>
-                  setEditingSkill(editingSkill ? { ...editingSkill, proficiency: value[0] } : null)
-                }
-              />
+              {editingSkill && (
+                <Slider
+                  id="skill-proficiency"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={[editingSkill?.proficiency || 70]}
+                  onValueChange={(value) => setEditingSkill({ ...editingSkill, proficiency: value[0] })}
+                />
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -255,4 +294,3 @@ export function SkillsEditor({ resumeId, initialSkills }: SkillsEditorProps) {
     </div>
   )
 }
-

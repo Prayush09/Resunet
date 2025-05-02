@@ -21,7 +21,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from "@/hooks/use-toast"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { jsPDF } from "jspdf"
-import html2canvas from "html2canvas"
 import  stripHtml  from "@/lib/html-utils"
 
 interface ResumeUser {
