@@ -10,6 +10,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
+import { jsPDF } from "jspdf"
+import html2canvas from "html2canvas"
 
 interface ResumeUser {
   name?: string;
@@ -17,6 +19,7 @@ interface ResumeUser {
   image?: string;
   twitter?: string;
   linkedin?: string;
+  mobile?: string;
 }
 
 interface ResumeSkill {
@@ -52,6 +55,37 @@ interface Resume {
 
 interface ModernTemplateProps {
   resume: Resume;
+}
+
+function stripHtml(html: string | undefined | null): string {
+  if (!html) return "";
+  if (typeof window === 'undefined') return '';
+
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+
+  // Attempt to add newlines logically
+  // Replace <br> tags with newlines
+  tempDiv.querySelectorAll("br").forEach(br => br.replaceWith("\n"));
+  // Add newlines after block elements like p, div, li, headings
+  tempDiv.querySelectorAll("p, div, li, h1, h2, h3, h4, h5, h6").forEach(el => {
+      // Check if the element isn't empty and doesn't already end with significant whitespace
+      const currentText = el.textContent || '';
+      if (currentText.trim().length > 0 && !/\s\s+$/.test(currentText)) {
+         el.append("\n");
+      }
+  });
+
+  // Get text content
+  let text = tempDiv.textContent || tempDiv.innerText || "";
+
+  // Clean up whitespace:
+  text = text.replace(/[ \t]+/g, ' '); // Collapse multiple spaces/tabs to one
+  text = text.replace(/\n /g, '\n'); // Remove space after newline
+  text = text.replace(/(\n\s*){3,}/g, '\n\n'); // Collapse 3+ newlines to 2 (paragraph break)
+  text = text.trim(); // Remove leading/trailing whitespace
+
+  return text;
 }
 
 export function ModernTemplate({ resume }: ModernTemplateProps) {
@@ -141,29 +175,276 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
     )
   }
 
-  const handleExport = async (_exportFormat: string) => {
-    setIsExporting(true)
-    try {
-      toast({
-        title: "Export functionality",
-        description: "Export will be implemented in the future",
-      })
-    } catch (error) {
-      console.error("Export error:", error)
-      toast({
-        title: "Export failed",
-        description: "Failed to export resume. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsExporting(false)
-    }
-  }
 
+  const handleExportATS = async () => {
+    setIsExporting(true);
+    try {
+        const doc = new jsPDF({
+            orientation: "p",
+            unit: "pt",
+            format: "a4",
+        });
+
+        // --- Formatting Constants ---
+        const MARGIN = 40;
+        const FONT_NAME = 'helvetica'; // Standard ATS-safe font
+        const NAME_SIZE = 18;
+        const HEADING_SIZE = 12;
+        const BODY_SIZE = 10;
+        const CONTACT_SIZE = 9;
+        // Further increased line spacing for more space within text blocks (kept same)
+        const LINE_SPACING_BODY = 1.3;
+        // Adjusted space after each major section back to 18 for ~2 line gap between sections
+        const SECTION_SPACE_AFTER = 8; 
+        const HEADING_SPACE_AFTER = 6; // Space after a heading line (kept same)
+        const ITEM_SPACE_AFTER = 4; // Space after a list item or paragraph (kept same)
+        const CONTACT_SPACE_AFTER = 2; // Space between contact lines (kept same)
+        // Space between heading line and the start of section content (kept same)
+        const SPACE_AFTER_HEADING_LINE_CONTENT_START = 12;
+
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const contentWidth = pageWidth - MARGIN * 2;
+        let yPos = MARGIN; // Start position
+
+        // --- PDF Generation Helpers ---
+
+        // Helper to add text and manage Y position + page breaks
+        // Now includes improved page break prediction
+        const addText = (
+            text: string,
+            options: {
+                x?: number;
+                size?: number;
+                style?: string;
+                lineHeight?: number;
+                spaceAfter?: number;
+                maxWidth?: number;
+                align?: 'left' | 'center' | 'right'; // Added alignment
+            } = {} // Default options object
+        ) => {
+            const fontSize = options.size || BODY_SIZE;
+            const fontStyle = options.style || "normal";
+            const lineHeight = options.lineHeight || LINE_SPACING_BODY; // Uses the increased constant
+            const spacing = options.spaceAfter || ITEM_SPACE_AFTER;
+            const maxWidth = options.maxWidth || contentWidth;
+            const alignment = options.align || 'left';
+            const xPos = options.x || MARGIN;
+
+            doc.setFontSize(fontSize);
+            doc.setFont(FONT_NAME, fontStyle);
+            doc.setLineHeightFactor(lineHeight);
+
+            const lines = doc.splitTextToSize(text, maxWidth);
+            // Approximate height considering line spacing
+            const textHeight = doc.getTextDimensions(lines, { fontSize: fontSize }).h * lineHeight;
+
+            // Check if text block fits, add page if not
+            if (yPos + textHeight > pageHeight - MARGIN) {
+                doc.addPage();
+                yPos = MARGIN;
+            }
+
+            doc.text(lines, xPos, yPos, { maxWidth: maxWidth, align: alignment }); // Use alignment option
+
+            yPos += textHeight + spacing;
+        };
+
+
+        const addHeading = (title: string) => {
+             // Recalculate required space including heading text height (approx), HEADING_SPACE_AFTER, line height (5), and SPACE_AFTER_HEADING_LINE_CONTENT_START
+             const requiredSpaceForHeadingBlock = HEADING_SIZE * 1 + HEADING_SPACE_AFTER + 5 + SPACE_AFTER_HEADING_LINE_CONTENT_START; // Using 1 as approx line height for heading text
+            if (yPos > pageHeight - MARGIN - requiredSpaceForHeadingBlock) {
+                doc.addPage();
+                yPos = MARGIN;
+            }
+             // This space is added *before* the heading text starts
+             yPos += SECTION_SPACE_AFTER / 2; // Space before heading text
+
+            addText(title.toUpperCase(), {
+                size: HEADING_SIZE,
+                style: "bold",
+                spaceAfter: HEADING_SPACE_AFTER, // Space after heading text, before line
+                lineHeight: 1 // Keeping heading line height compact
+            });
+            // Optional: Add a line below heading
+             doc.setLineWidth(0.5);
+             // Line is drawn relative to the yPos *after* addText finishes for the heading
+             doc.line(MARGIN, yPos - HEADING_SPACE_AFTER + (HEADING_SPACE_AFTER / 2) , pageWidth - MARGIN, yPos - HEADING_SPACE_AFTER + (HEADING_SPACE_AFTER / 2));
+             // Adjusted line y position calculation slightly
+             const lineY = yPos - HEADING_SPACE_AFTER/2;
+             doc.line(MARGIN, lineY, pageWidth - MARGIN, lineY);
+
+             // Add the space after the line before the content starts
+             yPos += SPACE_AFTER_HEADING_LINE_CONTENT_START; // Space after line before content
+        };
+
+        // --- Content Generation ---
+
+        // 1. Contact Information (Left Aligned, Clearer Layout)
+        if (resume.user?.name) {
+            addText(resume.user.name, {
+                size: NAME_SIZE,
+                style: "bold",
+                spaceAfter: ITEM_SPACE_AFTER * 2, // More space after name
+                lineHeight: 1
+            });
+        } else if (resume.title) {
+             addText(resume.title, { // Use resume title if name missing
+                 size: NAME_SIZE,
+                 style: "bold",
+                 spaceAfter: ITEM_SPACE_AFTER * 2,
+                 lineHeight: 1
+             });
+        }
+
+        if (resume.user?.mobile) {
+            addText(resume.user.mobile, { size: CONTACT_SIZE, spaceAfter: CONTACT_SPACE_AFTER, lineHeight: 1 });
+        }
+        if (resume.user?.email) {
+            addText(resume.user.email, { size: CONTACT_SIZE, spaceAfter: CONTACT_SPACE_AFTER, lineHeight: 1 });
+        }
+        if (resume.user?.linkedin) {
+            const linkedInUrl = resume.user.linkedin.startsWith('http') ? resume.user.linkedin : `https://linkedin.com/in/${resume.user.linkedin}`;
+            addText(`LinkedIn: ${linkedInUrl}`, { size: CONTACT_SIZE, spaceAfter: CONTACT_SPACE_AFTER, lineHeight: 1 });
+        }
+        if (resume.user?.twitter) {
+             addText(`Twitter: https://twitter.com/${resume.user.twitter}`, { size: CONTACT_SIZE, spaceAfter: CONTACT_SPACE_AFTER, lineHeight: 1 });
+        }
+        yPos += SECTION_SPACE_AFTER / 2; // Add space after contact block
+
+
+        // 2. Summary
+        if (resume.summary) {
+            addHeading("Summary");
+            // This content is added as a single block, spacing controlled by LINE_SPACING_BODY
+            addText(stripHtml(resume.summary), { spaceAfter: SECTION_SPACE_AFTER }); // Adds 18pt after content
+        }
+
+        // 3. Experience
+        const experienceSection = resume.sections.find(s => s.type === "EXPERIENCE");
+        if (experienceSection) {
+            addHeading("Experience"); // Adds 9pt before heading
+             // This content is added as a single block, spacing controlled by LINE_SPACING_BODY
+            addText(stripHtml(experienceSection.content), { spaceAfter: SECTION_SPACE_AFTER }); // Adds 18pt after content
+        }
+
+         // 4. Education
+        const educationSection = resume.sections.find(s => s.type === "EDUCATION");
+        if (educationSection) {
+            addHeading("Education"); // Adds 9pt before heading
+             // This content is added as a single block, spacing controlled by LINE_SPACING_BODY
+            addText(stripHtml(educationSection.content), { spaceAfter: SECTION_SPACE_AFTER }); // Adds 18pt after content
+        }
+
+        // 5. Skills (Bulleted List) - Spacing is handled by ITEM_SPACE_AFTER between list items
+        let allSkills: string[] = [];
+        if (resume.skills) {
+             // Assuming resume.skills is an array of skill objects like { name: 'Skill Name' }
+             // Adjust mapping if structure is different
+            allSkills = allSkills.concat(resume.skills.map(s => s.name));
+        }
+        const skillsSections = resume.sections.filter(s => s.type === "SKILLS");
+        skillsSections.forEach(section => {
+             // stripHtml should ideally handle converting list items to lines
+            const skillsFromSection = stripHtml(section.content)
+                 .split('\n') // Split by newline (stripHtml preserves list items as newlines)
+                 .map(s => s.replace(/^•\s*/, '').trim()) // Remove potential leading bullets from stripHtml and trim
+                 .filter(s => s);
+            allSkills = allSkills.concat(skillsFromSection);
+        });
+        const uniqueSkills = [...new Set(allSkills)].filter(s => s);
+
+        if (uniqueSkills.length > 0) {
+            addHeading("Skills"); // Adds 9pt before heading
+            uniqueSkills.forEach(skill => {
+                 // Each skill is added as a separate text line with space after
+                addText(`• ${skill}`, { spaceAfter: ITEM_SPACE_AFTER });
+            });
+             // This effectively adds SECTION_SPACE_AFTER - ITEM_SPACE_AFTER after the last item
+             yPos += SECTION_SPACE_AFTER - ITEM_SPACE_AFTER; // Adds 18pt after the last skill item
+        }
+
+        // 6. Projects
+        const projectsSection = resume.sections.find(s => s.type === "PROJECTS");
+        if (projectsSection) {
+            addHeading("Projects"); // Adds 9pt before heading
+             // This content is added as a single block, spacing controlled by LINE_SPACING_BODY
+            addText(stripHtml(projectsSection.content), { spaceAfter: SECTION_SPACE_AFTER }); // Adds 18pt after content
+        }
+
+        // 7. Certifications
+        const certSection = resume.sections.find(s => s.type === "CERTIFICATIONS");
+        if (certSection) {
+            addHeading("Certifications"); // Adds 9pt before heading
+             // This content is added as a single block, spacing controlled by LINE_SPACING_BODY
+            addText(stripHtml(certSection.content), { spaceAfter: SECTION_SPACE_AFTER }); // Adds 18pt after content
+        }
+
+        // 8. Patents (Bulleted List) - Spacing is handled by ITEM_SPACE_AFTER between list items
+        if (resume.patents && resume.patents.length > 0) {
+            addHeading("Patents"); // Adds 9pt before heading
+            resume.patents.forEach(patent => {
+                let patentInfo = `${patent.title} - ${patent.authors}`;
+                if (patent.patentNumber) patentInfo += ` (Patent #: ${patent.patentNumber})`;
+                if (patent.publicationDate) patentInfo += ` (Published: ${patent.publicationDate})`;
+                 // Each patent is added as a separate text line with space after
+                addText(`• ${patentInfo}`, { size: BODY_SIZE, spaceAfter: ITEM_SPACE_AFTER });
+            });
+             // This effectively adds SECTION_SPACE_AFTER - ITEM_SPACE_AFTER after the last item
+             yPos += SECTION_SPACE_AFTER - ITEM_SPACE_AFTER; // Adds 18pt after the last patent item
+        }
+
+        // 9. Custom Sections
+        const customSections = resume.sections.filter(s => s.type === "CUSTOM");
+         customSections.forEach(section => {
+             // Derive title - CHECK HOW YOUR DATA STORES CUSTOM TITLES
+             // If section.content includes the title on the first line:
+             const contentLines = stripHtml(section.content).split('\n');
+             const title = contentLines[0] || `Custom Section (${section.id})`; // Use first line or fallback
+             const body = contentLines.slice(1).join('\n'); // Rest of the content is the body
+
+             addHeading(title); // Adds 9pt before heading
+              // This content is added as a single block, spacing controlled by LINE_SPACING_BODY
+             addText(body, { spaceAfter: SECTION_SPACE_AFTER }); // Adds 18pt after content
+         });
+
+
+        // --- Save the PDF ---
+        const filename = `${resume.user?.name || resume.title || 'Resume'}_ATS.pdf`;
+        doc.save(filename);
+        toast({ title: "ATS Export successful", description: `Saved as ${filename}` });
+
+    } catch (error) {
+        console.error("ATS Export error:", error);
+        toast({
+            title: "ATS Export failed",
+            description: "Could not generate ATS-friendly PDF. Please try again.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsExporting(false);
+    }
+};
+  const handleExport = async (exportType: string) => {
+    // --- NEW: Route to the correct export function ---
+    if (exportType === 'ats-pdf') {
+        await handleExportATS();
+        return;
+    }else {
+      // Handle other export types like Markdown, JSON if needed
+      toast({
+        title: "Export unsupported",
+        description: `${exportType.toUpperCase()} coming soon!`,
+      });
+    }
+  };
+  
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50  py-10">
       <div className="container max-w-4xl mx-auto px-4">
-        <Card className="overflow-hidden shadow-lg border-0 dark:border-gray-700">
+        <Card className="overflow-hidden shadow-lg border-0 dark:border-gray-700" ref={resumeRef}>
           <div className="bg-primary p-6 md:p-8 text-primary-foreground dark:bg-gray-800 dark:text-gray-100 relative">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
             <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary-foreground/20 shadow-md">
@@ -226,7 +507,7 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
             </div>
           </div>
 
-          <div className="p-6 md:p-8" ref={resumeRef}>
+          <div className="p-6 md:p-8" >
           {resume.summary && (
               <div className="mb-6 animate-fadeIn">
                 <div className="flex items-center gap-2 mb-3">
@@ -264,24 +545,21 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
-              <DropdownMenuItem onClick={() => handleExport("pdf")}>
+              {/* --- NEW ATS PDF Option --- */}
+              <DropdownMenuItem onClick={() => handleExport("ats-pdf")}>
                 <FileText className="mr-2 h-4 w-4" />
-                <span>PDF</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("markdown")}>
-                <FileText className="mr-2 h-4 w-4" />
-                <span>Markdown</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("json")}>
-                <FileText className="mr-2 h-4 w-4" />
-                <span>JSON</span>
+                <span>ATS-Friendly PDF</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <Button variant="outline" className="group" asChild>
             {/* @ts-ignore */}
-            <a href={`${window.location.origin}/r/${resume.id}`} target="_blank" rel="noopener noreferrer">
+            <a
+              href={`${window.location.origin}/r/${resume.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <ExternalLink className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               Share Link
             </a>
@@ -301,17 +579,55 @@ export function ModernTemplate({ resume }: ModernTemplateProps) {
           color: hsl(var(--primary));
           margin-top: 1.2em;
           margin-bottom: 0.4em;
-          margin-top: 1.2em;
-          margin-bottom: 0.4em;
         }
         .prose p, .prose ul, .prose ol {
           margin-top: 0.4em;
           margin-bottom: 0.4em;
           line-height: 1.4;
-          margin-top: 0.4em;
-          margin-bottom: 0.4em;
-          line-height: 1.4;
         }
+        .exporting-pdf {
+           background-color: white !important; /* Force white background */
+           color: #000000 !important; /* Base text color */
+         }
+        .exporting-pdf * {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          /* Reset potential dark mode colors */
+          /* color: inherit !important;  Might cause issues, be specific */
+         }
+
+        /* Override specific elements for VISUAL export if needed */
+        .exporting-pdf .bg-primary {
+           background: linear-gradient(135deg,rgb(255, 255, 255) 0%,rgb(255, 255, 255) 100%) !important; /* Example gradient */
+           color: #ffffff !important;
+         }
+         .exporting-pdf .text-primary-foreground {
+            color: #ffffff !important;
+         }
+        .exporting-pdf .text-primary {
+           color: #3b82f6 !important; /* Example primary color */
+        }
+         .exporting-pdf .text-muted-foreground {
+           color: #555555 !important; /* Darker gray for print */
+           opacity: 1 !important;
+         }
+         .exporting-pdf .separator {
+           background-color: #cccccc !important; /* Lighter gray separator */
+           height: 1px !important;
+         }
+         .exporting-pdf .prose * {
+           /* Ensure prose text is black */
+           /* color: #000000 !important; */ /* Might conflict with specific overrides */
+         }
+         /* Hide elements not wanted in visual PDF */
+         .exporting-pdf .some-unwanted-element {
+            display: none !important;
+         }
+         /* Hide progress bars visually in PDF as they are images */
+         .exporting-pdf .progress-bar-container { /* Add a class to the container div if needed */
+            /* display: none !important; */ /* Or style text instead */
+         }
       `}</style>
     </div>
   )

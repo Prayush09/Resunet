@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { resumeId, type, content, order } = await req.json()
+    const { resumeId, type, content, order, customName } = await req.json()
 
     if (!resumeId || !type || !content) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         type,
         content,
         order: order || 0,
+        customName,
       },
     })
 
@@ -46,4 +47,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
-

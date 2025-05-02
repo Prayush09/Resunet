@@ -13,7 +13,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     const { id } = params
-    const { type, content } = await req.json()
+    const { type, content, customName } = await req.json()
 
     // Check if section exists and belongs to user's resume
     const section = await db.section.findUnique({
@@ -37,6 +37,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       data: {
         type,
         content,
+        customName,
       },
     })
 
@@ -84,4 +85,3 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
-
