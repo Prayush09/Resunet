@@ -477,13 +477,7 @@ export function useResume() {
   return context
 }
 
-//TODO: COMPLETE THE CONTEXT AND LOADING STATES V0
-//TODO: Make the custom section add custom name to the section for display on resume
-//TODO: add light and dark mode to the site
+
 //TODO: Add mobile number to profile section
-
-//TODO: FIX THE GOOGLE OAUTH WHEN USING SIGNUP WHEN ALREADY A SIGNED IN USER
-
-//TODO: ADD PDF EXPORT FUNCTIONALITY AND DONE!!
 
 //TODO: TEST ALL THE FUNCTIONALITY AND MAKE SURE IT WORKS AS EXPECTED
