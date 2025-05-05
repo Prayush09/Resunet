@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
+import { ThemeToggle } from "./theme-toggle"
 
 type SessionUser = {
   id: string
@@ -71,7 +72,8 @@ export function DashboardHeader() {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            <nav className="hidden md:flex">
+            <nav className="hidden md:flex m-4">
+            <ThemeToggle />
               <Link
                 href="/dashboard"
                 className={`px-3 py-2 text-sm font-medium transition-colors hover:text-primary ${
@@ -81,6 +83,7 @@ export function DashboardHeader() {
                 Dashboard
               </Link>
             </nav>
+            
             {status === "authenticated" && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

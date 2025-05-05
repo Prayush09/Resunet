@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Icons } from "@/components/icons"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const formSchema = z.object({
   email: z.string().email({
@@ -136,7 +137,11 @@ export function LoginForm() {
   }
 
   return (
-    <div className="grid gap-6">
+    <>
+      <div className="fixed bottom-4 right-4 z-50">
+              <ThemeToggle />
+      </div>
+      <div className="grid gap-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -190,5 +195,7 @@ export function LoginForm() {
 
       {authError && <p className="text-sm text-destructive text-center">{getErrorMessage(authError)}</p>}
     </div>
+    </>
+    
   )
 }

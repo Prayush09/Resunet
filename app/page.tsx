@@ -9,6 +9,7 @@ import { useCallback } from "react";
 import { loadSlim } from "tsparticles-slim";
 import type { Container, Engine } from "tsparticles-engine";
 import { GiNestEggs } from "react-icons/gi";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Particles = dynamic(() => import("react-particles"), {
   ssr: false,
@@ -25,6 +26,10 @@ export default function Home() {
   }, []);
 
   return (
+    <>
+    <div className="fixed top-4 right-64 z-50">
+                 
+    </div>
     <div className="flex min-h-screen flex-col relative">
       <Particles
         className="absolute inset-0 -z-10"
@@ -112,6 +117,7 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="flex items-center gap-4"
           >
+             <ThemeToggle />
             <Link href="/login">
               <Button variant="ghost">Log in</Button>
             </Link>
@@ -226,5 +232,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
