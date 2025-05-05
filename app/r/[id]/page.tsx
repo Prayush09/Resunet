@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { ResumeView } from "@/components/resume-view"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface ResumeViewPageProps {
   params: {
@@ -78,7 +79,12 @@ export default async function ResumeViewPage({ params }: ResumeViewPageProps) {
       patents,
     }
 
-    return <ResumeView resume={resumeWithPatents} />
+    return <>
+      <div className="fixed bottom-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      <ResumeView resume={resumeWithPatents} />
+      </>
   } catch (error) {
     console.error("Error fetching resume:", error)
     notFound()
